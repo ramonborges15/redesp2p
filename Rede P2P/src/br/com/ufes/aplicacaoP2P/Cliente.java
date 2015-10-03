@@ -27,7 +27,7 @@ public class Cliente {
 		return value;
 	}
 	
-	public void join() throws IOException {
+	public void join(int idNewNode, InetAddress ipNodeSuccessor) throws IOException {
 		
 		//Cria o socket do lado cliente.
 		DatagramSocket clientSocket = new DatagramSocket();
@@ -37,11 +37,11 @@ public class Cliente {
 		//Codigo da Mensagem de Join
 		byte codeMessage[] = {0}; 
 		sendData.put(codeMessage);
-		sendData.put(intToBytes(id));
+		sendData.put(intToBytes(idNewNode));
 		int sendPort = 12345;
 			
 		//Cria um pacote onde as informações são anexadas.
-		DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , ipAddressServer, sendPort);
+		DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , ipNodeSuccessor, sendPort);
 		
 		//Envia o pacote
 		clientSocket.send(sendPacket);

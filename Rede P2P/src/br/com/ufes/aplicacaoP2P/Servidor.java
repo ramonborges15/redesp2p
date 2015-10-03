@@ -4,6 +4,7 @@ import java.net.*;
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.SocketException;
 import java.util.Random;
 
 public class Servidor {
@@ -13,15 +14,17 @@ public class Servidor {
 		byte[] receiveData = new byte[1024];
 		
 		//Cria o Socket do lado servidor da aplicacao.
-		DatagramSocket serverSocket = new DatagramSocket(12345);
-		
-		while(true) {
-			//Cria um espaço para o pacote.
-			DatagramPacket receivePacket = DatagramPacket(receiveData, receiveData.length);
-			//Espera a chegada de um pacote.
-			serverSocket.receive(receivePacket);
+		DatagramSocket serverSocket;
+		try {
+			serverSocket = new DatagramSocket(12345);
 			
+			serverSocket.close();
+		} catch (SocketException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		
+		
 	}
 	
 	public int generateID() {
