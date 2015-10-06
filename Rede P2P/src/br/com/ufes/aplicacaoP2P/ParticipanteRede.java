@@ -2,40 +2,59 @@ package br.com.ufes.aplicacaoP2P;
 
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.util.Enumeration;
 
 public class ParticipanteRede {
 	private int id;
-	private InetAddress IPname;
-	private ParticipanteRede successor;
-	private ParticipanteRede antecessor;
+	private InetAddress IP;
+	private int idSuccessor;
+	private InetAddress IPSuccessor;
+	private int idAntecessor;
+	private InetAddress IPAntecessor;
 	
-	public static void main(String[] args) {
+	public ParticipanteRede () throws SocketException {
 		
-	}
-	
-	public ParticipanteRede (int id, InetAddress IPname, ParticipanteRede successor, ParticipanteRede antecessor) {
+		int id = 0;
+		Enumeration e = NetworkInterface.getNetworkInterfaces();
+		NetworkInterface ni = (NetworkInterface) e.nextElement();
+		ni.getInetAddresses().nextElement();
+		Enumeration e2 = ni.getInetAddresses();
+		e2.nextElement();
+		
 		this.id = id;
-		this.IPname = IPname;
-		this.successor = successor;
-		this.antecessor = antecessor;
+		this.IP = (InetAddress) e2.nextElement();
+		this.idAntecessor = id;
+		this.IPAntecessor = (InetAddress) e2.nextElement();
+		this.idSuccessor = id;
+		this.IPSuccessor = (InetAddress) e2.nextElement();
 	}
 	
 	public int getId() {
 		return this.id;
 	}
 	
-	public InetAddress getIPname() {
-		return this.IPname;
+	public InetAddress getIp() {
+		return this.IP;
 	}
 	
-	public ParticipanteRede getSuccessor() {
-		return this.successor ;
+	public int getIdAnt() {
+		return this.idAntecessor;
 	}
 	
-	public ParticipanteRede getAntecessor() {
-		return this.antecessor ;
+	public InetAddress getIpAnt() {
+		return this.IPAntecessor;
 	}
+	
+	public int getIdSuc() {
+		return this.idSuccessor;
+	}
+	
+	public InetAddress getIpSuc() {
+		return this.IPSuccessor;
+	}
+	
 }
 
 

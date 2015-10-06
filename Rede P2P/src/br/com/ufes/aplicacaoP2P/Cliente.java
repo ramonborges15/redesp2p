@@ -1,15 +1,27 @@
+
 package br.com.ufes.aplicacaoP2P;
+
 
 import java.net.*;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Random;
 import java.lang.*;
 import java.io.ByteArrayInputStream;
 
 
-public class Cliente {
+
+public class Cliente implements Runnable{
+	
+	int sendPort = 12345;
+	
+	public void run() {
+		//Cliente c = new Cliente();
+	   // c.getInterfaces();
+	}
+	
 	
 	//Converte um inteiro em um vetor de 4 bytes.
 	public byte[] intToBytes(int i) {
@@ -38,7 +50,6 @@ public class Cliente {
 		byte codeMessage[] = {0}; 
 		sendData.put(codeMessage);
 		sendData.put(intToBytes(idNewNode));
-		int sendPort = 12345;
 			
 		//Cria um pacote onde as informações são anexadas.
 		DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , ipNodeSuccessor, sendPort);
@@ -49,7 +60,7 @@ public class Cliente {
 		clientSocket.close();
 	}
 	
-	public void leave(int idNodeLeaving, ParticipanteRede nodeAntecessor, ParticipanteRede nodeSuccessor) throws IOException {
+	public void leave(int idNodeLeaving, ParticipanteRede nodeAnt, ParticipanteRede nodeSuc) throws IOException {
 		//Cria o socket do lado cliente.
 		DatagramSocket clientSocker = new DatagramSocket();
 		
@@ -58,23 +69,22 @@ public class Cliente {
 		byte codeMessage[] = {1};  //Codigo da Mensagem Leave
 		sendData.put(codeMessage);
 		sendData.put(intToBytes(idNodeLeaving));
-		sendData.put(intToBytes(nodeSuccessor.getId()));
-		sendData.put(nodeSuccessor.getIPname().getAddress());
-		sendData.put(intToBytes(nodeAntecessor.getId()));
-		sendData.put(nodeAntecessor.getIPname().getAddress()); 
-		int sendPort = 12345;
+		sendData.put(intToBytes(nodeSuc.getId()));
+		sendData.put(nodeSuc.getIp().getAddress());
+		sendData.put(intToBytes(nodeAnt.getId()));
+		sendData.put(nodeAnt.getIp().getAddress()); 
 		
 		// Enviar pacote para Antecessor
-		DatagramPacket sendPacketfst = new DatagramPacket(sendData.array() , sendData.capacity() , nodeAntecessor.getIPname(), sendPort);		
+		DatagramPacket sendPacketfst = new DatagramPacket(sendData.array() , sendData.capacity() , nodeAnt.getIp(), sendPort);		
 		clientSocker.send(sendPacketfst);
 		// Enviar pacote para Sucessor
-		DatagramPacket sendPacketsnd = new DatagramPacket(sendData.array() , sendData.capacity() , nodeAntecessor.getIPname(), sendPort);		
+		DatagramPacket sendPacketsnd = new DatagramPacket(sendData.array() , sendData.capacity() , nodeAnt.getIp(), sendPort);		
 		clientSocker.send(sendPacketsnd);
 				
 		clientSocker.close();
 	}
 	
-	private void lookup(int idSource, InetAddress ipSource,int idWanted) throws IOException {
+	public void lookup(int idSource, InetAddress ipSource,int idWanted) throws IOException {
 		//idSource - identificador de origem da procura.
 		
 		//Cria o socket do lado cliente.
@@ -87,7 +97,6 @@ public class Cliente {
 		sendData.put(intToBytes(idSource));			//id participante da rede.
 		sendData.put(ipSource.getAddress());	//ip participante da rede.
 		sendData.put(intToBytes(idWanted));			 	//id do nó que deseja participar da rede.
-		int sendPort = 12345;
 		
 		//Cria um pacote onde as informações são anexadas.
 		DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , ipSource, sendPort);
@@ -110,7 +119,6 @@ public class Cliente {
 		sendData.put(intToBytes(idSource));			//id de origem (valor que vem do gerador)
 		sendData.put(intToBytes(idNewSuc));			//id do novo sucessor .
 		sendData.put(ipNewSuc.getAddress());			//ip do novo sucessor.
-		int sendPort = 12345;
 				
 		//Cria um pacote onde as informações são anexadas.
 		DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , ipNodeAnt, sendPort);
@@ -120,7 +128,4 @@ public class Cliente {
 		clientSocket.close();
 	}
 }
-
-
-
 
