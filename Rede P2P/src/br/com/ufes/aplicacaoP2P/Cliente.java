@@ -19,7 +19,7 @@ public class Cliente implements Runnable{
 	
 	public void run() {
 		//Cliente c = new Cliente();
-	   // c.getInterfaces();
+	   
 	}
 	
 	

@@ -16,7 +16,7 @@ public class ParticipanteRede {
 	
 	public ParticipanteRede () throws SocketException {
 		
-		int id = 0;
+		int id = 0; //int 
 		Enumeration e = NetworkInterface.getNetworkInterfaces();
 		NetworkInterface ni = (NetworkInterface) e.nextElement();
 		ni.getInetAddresses().nextElement();

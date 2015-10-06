@@ -134,7 +134,7 @@ public class Servidor implements Runnable{
 			//Montando pacote
 			ByteBuffer sendData = ByteBuffer.allocate(13); //Aloca um espaço de 13 bytes
 			byte codeMessage[] = {(byte)(128)};
-			sendData.put(codeMessage);					//Codigo da mensagem de Lookup
+			sendData.put(codeMessage);					//Codigo da mensagem  Lookup
 			sendData.put(client.intToBytes(idWanted));
 			sendData.put(client.intToBytes(node.getId()));
 			sendData.put(node.getIp().getAddress());

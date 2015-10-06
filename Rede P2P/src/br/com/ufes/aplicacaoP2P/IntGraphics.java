@@ -106,14 +106,7 @@ public class IntGraphics {
        }); 
 	}
 	
-	public void btnUpdateClick(JButton nod) {
-		 nod.addActionListener(new ActionListener() {
-           public void actionPerformed(ActionEvent e)
-           {
-           	
-           }
-       }); 
-	}
+	
 
 	/*
 	  Initialize the contents of the frame.
