@@ -14,21 +14,16 @@ public class Servidor implements Runnable{
 	DatagramSocket serverSocket;
 	Servidor server;
 	Cliente client;
-	ParticipanteRede node;
+	ParticipanteRede node, auxAnt;
 	
 	
 	public void run() {
-		
-		//byte[] sendData = new byte[1024];
-		//byte[] receiveData = new byte[1024];
-		
 		try {
+			auxAnt = new ParticipanteRede();
 			ByteBuffer data = ByteBuffer.allocate(256);
 			//Cria o Socket do lado servidor da aplicacao.
 			serverSocket =  new DatagramSocket(12345);
-			server = new Servidor();
-			client = new Cliente();
-		
+			
 			char op;
 			while(true) {
 				DatagramPacket recvPacket = new DatagramPacket(new byte[1024] , 1024);
@@ -50,12 +45,12 @@ public class Servidor implements Runnable{
 						case '3': 
 							break;
 						case 128: 
-							
+							joinServerAnswer();
 							break;
 						case 129: 
 							break;
-						case 130: 
-							lookupServerAnswer(bin);
+						case '5': 
+							lookupServerAnswer(bin, auxAnt);
 							break;
 						case 131: 
 									break;
@@ -73,7 +68,15 @@ public class Servidor implements Runnable{
 		}
 	}
 	
+	public ParticipanteRede getAux() {
+		return auxAnt;
+	}
 	
+	private void joinServerAnswer() {
+		
+	}
+
+
 	public ParticipanteRede createNode() throws UnknownHostException, SocketException {
 		ParticipanteRede newNode = new ParticipanteRede();
 		return newNode;
@@ -103,6 +106,9 @@ public class Servidor implements Runnable{
 		
 		//Esta entre o antecessor e o id de origem
 		if(idWanted < node.getId() && idWanted > node.getIdAnt()) {
+			//Guarda a informação anterior para ser mandada a funcao de resposta Join.
+			auxAnt.setIdAnt(node.getIdAnt());
+			auxAnt.setIpAnt(node.getIpAnt());
 			//Montando pacote
 			ByteBuffer sendData = ByteBuffer.allocate(13); //Aloca um espaço de 13 bytes
 			byte codeMessage[] = {(byte)(130)};
@@ -117,6 +123,9 @@ public class Servidor implements Runnable{
 		}
 		//Esta entre o id de origem e o sucessor
 		else if(idWanted > node.getId() && idWanted < node.getIdSuc()) {
+			//Guarda a informação anterior para ser mandada a funcao de resposta Join.
+			auxAnt.setIdAnt(node.getId());
+			auxAnt.setIpAnt(node.getIp());
 			//Montando pacote
 			ByteBuffer sendData = ByteBuffer.allocate(13); //Aloca um espaço de 13 bytes
 			byte codeMessage[] = {(byte)(130)};
@@ -131,9 +140,12 @@ public class Servidor implements Runnable{
 		}
 		//Temos apenas um nó
 		else if(id == node.getIdSuc()) {
+			//Guarda a informação anterior para ser mandada a funcao de resposta Join.
+			auxAnt.setIdAnt(node.getId());
+			auxAnt.setIpAnt(node.getIp());
 			//Montando pacote
 			ByteBuffer sendData = ByteBuffer.allocate(13); //Aloca um espaço de 13 bytes
-			byte codeMessage[] = {(byte)(130)};
+			byte codeMessage[] = {(byte)(5)};
 			sendData.put(codeMessage);					//Codigo da mensagem  Lookup
 			sendData.put(client.intToBytes(idWanted));
 			sendData.put(client.intToBytes(node.getId()));
@@ -147,6 +159,10 @@ public class Servidor implements Runnable{
 		//No de origem é o menor da rede.
 		//Ex: rede com 3 nos -- noAntecessorId=27   noOrigemId=8  noSucessorId=14       novoNoId=41
 		else if(idWanted < node.getId() && node.getId() < node.getIdAnt() && node.getId() < node.getIdSuc()) {
+			//Guarda a informação anterior para ser mandada a funcao de resposta Join.
+			auxAnt.setIdAnt(node.getIdSuc());
+			auxAnt.setIpAnt(node.getIpSuc());
+			
 			//Montando pacote
 			ByteBuffer sendData = ByteBuffer.allocate(13); //Aloca um espaço de 13 bytes
 			byte codeMessage[] = {(byte)(130)};
@@ -185,7 +201,7 @@ public class Servidor implements Runnable{
 		
 	}
 	
-	public void lookupServerAnswer(ByteArrayInputStream bin) {
+	public void lookupServerAnswer(ByteArrayInputStream bin, ParticipanteRede p) throws UnknownHostException {
 		//Desmontando o pacote
 		byte[] recvDataid = new byte[4];
 		recvDataid[0] =	(byte) bin.read();
@@ -198,13 +214,18 @@ public class Servidor implements Runnable{
 		recvDataidSuc[1] = (byte) bin.read();
 		recvDataidSuc[2] = (byte) bin.read();
 		recvDataidSuc[3] = (byte) bin.read();
+		
 		byte[] recvDataipSuc = new byte[4];
 		recvDataipSuc[0] =	(byte) bin.read();
 		recvDataipSuc[1] =	(byte) bin.read();
 		recvDataipSuc[2] =	(byte) bin.read();
 		recvDataipSuc[3] =	(byte) bin.read();
 		
+		auxAnt.setId(client.bytesToInt(recvDataid));
+		auxAnt.setIdSuc(client.bytesToInt(recvDataidSuc));
+		auxAnt.setIpSuc(InetAddress.getByAddress(recvDataipSuc));
 	}
+	
 	
 	public int generateID() {
 		int value;
@@ -212,6 +233,22 @@ public class Servidor implements Runnable{
 		value = random.nextInt((int) Math.pow(2, 32) - 1);
 		return value;
 	}
+	
+	//Converte um inteiro em um vetor de 4 bytes.
+		public byte[] intToBytes(int i) {
+			ByteBuffer bb = ByteBuffer.allocate(4);
+			bb.putInt(i);
+			return bb.array();
+		}
+		
+		public static int bytesToInt(byte[] b) {
+			int value = 0;
+			for (int i = 0; i < 4; i++) {
+				int shift = (4 - 1 - i) * 8;
+				value += (b[i] & 0x000000FF) << shift;
+			}
+			return value;
+		}
 }
 
 

@@ -14,12 +14,16 @@ import javax.swing.JLabel;
 import java.awt.Choice;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.util.Enumeration;
 import java.util.Random;
 
@@ -28,7 +32,7 @@ import javax.swing.JEditorPane;
 
 import java.awt.TextField;
 
-public class IntGraphics {
+public class IntGraphics implements Runnable{
 
 	public JFrame frame;
 	public JTextField textMyIP;
@@ -60,27 +64,6 @@ public class IntGraphics {
 		});
 	}
 	
-	public JTextField getTxtip() {
-		return this.textMyIP;
-	}
-	
-	public JTextField getTxtid() {
-		return this.textMyID;
-	}
-	public JTextField getTxtipAnt() {
-		return this.textIpAnt;
-	}
-	
-	public JTextField getTxtidAnt() {
-		return this.textIdAnt;
-	}
-	public JTextField getTxtipSuc() {
-		return this.textIpSuc;
-	}
-	
-	public JTextField getTxtidSuc() {
-		return this.textIdSuc;
-	}
 	/*
 	  Create the application.
 	 */
@@ -94,7 +77,7 @@ public class IntGraphics {
             public void actionPerformed(ActionEvent e)
             {
 				try {
-
+					
 					int id;
 					Random random  = new Random(System.currentTimeMillis());
 					id = random.nextInt((int) Math.pow(2, 32) - 1);
@@ -137,21 +120,29 @@ public class IntGraphics {
         }); 
 	}
 	
-	public void btnJoinClick(JButton nod) {
+	public void btnJoinClick() {
 		 btnJoin.addActionListener(new ActionListener() {
            public void actionPerformed(ActionEvent e)
            {
-        	   try {
-        		   
-        		   int id;
-            	   Random random  = new Random(System.currentTimeMillis());
-            	   id = random.nextInt((int) Math.pow(2, 32) - 1);
-        		   client.join(id, InetAddress.getByName(textMyIP.getText()));
-        		   
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+        	newNode = server.getAux();
+			//Montando pacote
+			
+			ByteBuffer sendData = ByteBuffer.allocate(18); //Aloca um espaço de 18 bytes
+			byte codeMessage[] = {(byte)(128)};
+			sendData.put(codeMessage);					//Codigo da mensagem de Lookup
+			sendData.put((byte) 1);							
+			sendData.put(client.intToBytes(newNode.getIdSuc()));			//id sucessor.
+			sendData.put(newNode.getIpSuc().getAddress());			//ip sucessor.
+			sendData.put(client.intToBytes(newNode.getIdAnt()));		//id antecessor.
+			sendData.put(newNode.getIpAnt().getAddress());				//ip antecessor
+			
+			btnJoin.setEnabled(false);
+			String str = Integer.toString(newNode.getIdAnt());
+			textMyID.setText(str);
+			textMyIP.setText(newNode.getIpAnt().getHostName());
+			
+			//Cria um pacote onde as informações são anexadas.
+			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , newNode.getIpSuc(), client.sendPort);
            }
        }); 
 	}
@@ -168,7 +159,6 @@ public class IntGraphics {
 					InetAddress ip = InetAddress.getByName(textRecvLookup.getText());
 					btnLookup.setEnabled(false);
 	           		btnJoin.setEnabled(true);
-	           		//System.out.println(ip.getHostAddress());
 	           		client.lookup(idWanted, ip, idWanted);
 				} catch (UnknownHostException e1) {
 					// TODO Auto-generated catch block
@@ -305,8 +295,31 @@ public class IntGraphics {
 		
 		btnCreateClick();
 		btnLookupClick();
+		btnJoinClick();
 		/*btnLeaveClick();
 		
 		btnUpdateClick(); */
 	}
+	
+	//Converte um inteiro em um vetor de 4 bytes.
+		public byte[] intToBytes(int i) {
+			ByteBuffer bb = ByteBuffer.allocate(4);
+			bb.putInt(i);
+			return bb.array();
+		}
+		
+		public static int bytesToInt(byte[] b) {
+			int value = 0;
+			for (int i = 0; i < 4; i++) {
+				int shift = (4 - 1 - i) * 8;
+				value += (b[i] & 0x000000FF) << shift;
+			}
+			return value;
+		}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			
+		}
 }

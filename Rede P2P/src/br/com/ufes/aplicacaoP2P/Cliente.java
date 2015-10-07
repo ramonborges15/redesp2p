@@ -17,7 +17,6 @@ public class Cliente implements Runnable{
 	int sendPort = 12345;
 	
 	public void run() {
-		//Cliente c = new Cliente();
 	   
 	}
 	
