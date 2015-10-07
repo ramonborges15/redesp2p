@@ -15,7 +15,7 @@ public class Servidor implements Runnable{
 	Servidor server;
 	Cliente client;
 	ParticipanteRede node;
-	IntGraphics frame;
+	
 	
 	public void run() {
 		
@@ -28,49 +28,49 @@ public class Servidor implements Runnable{
 			serverSocket =  new DatagramSocket(12345);
 			server = new Servidor();
 			client = new Cliente();
-			node = new ParticipanteRede();
+		
 			char op;
 			while(true) {
 				DatagramPacket recvPacket = new DatagramPacket(new byte[1024] , 1024);
 				try {
 					serverSocket.receive(recvPacket);
+
+					ByteArrayInputStream bin = new ByteArrayInputStream(recvPacket.getData());
+					op = (char) bin.read();
+					
+					switch(op) {
+						case '0':
+							joinAnswer();
+							break;
+						case '1': 
+							break;
+						case '2': 
+							lookupAnswer(bin);
+							break;
+						case '3': 
+							break;
+						case 128: 
+							
+							break;
+						case 129: 
+							break;
+						case 130: 
+							lookupServerAnswer(bin);
+							break;
+						case 131: 
+									break;
+						default:
+					}
+				
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				}
-				ByteArrayInputStream bin = new ByteArrayInputStream(recvPacket.getData());
-				op = (char) bin.read();
-				
-				switch(op) {
-					case '0':
-						break;
-					case '1': 
-						break;
-					case '2': 
-						lookupServer(bin);
-						break;
-					case '3': 
-						break;
-					case 128: 
-								break;
-					case 129: 
-								break;
-					case 130: 
-								break;
-					case 131: 
-								break;
-					default:
-				}
-			}
-		} catch (SocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+				} 
+			} 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		
 	}
 	
 	
@@ -79,7 +79,7 @@ public class Servidor implements Runnable{
 		return newNode;
 	}
 	
-	public void lookupServer(ByteArrayInputStream bin) throws IOException {
+	public void lookupAnswer(ByteArrayInputStream bin) throws IOException {
 		//Desmontando o pacote
 		byte[] recvDataid = new byte[4];
 		recvDataid[0] =	(byte) bin.read();
@@ -105,7 +105,7 @@ public class Servidor implements Runnable{
 		if(idWanted < node.getId() && idWanted > node.getIdAnt()) {
 			//Montando pacote
 			ByteBuffer sendData = ByteBuffer.allocate(13); //Aloca um espaço de 13 bytes
-			byte codeMessage[] = {(byte)(128)};
+			byte codeMessage[] = {(byte)(130)};
 			sendData.put(codeMessage);					//Codigo da mensagem de Lookup
 			sendData.put(client.intToBytes(idWanted));
 			sendData.put(client.intToBytes(node.getId()));
@@ -119,7 +119,7 @@ public class Servidor implements Runnable{
 		else if(idWanted > node.getId() && idWanted < node.getIdSuc()) {
 			//Montando pacote
 			ByteBuffer sendData = ByteBuffer.allocate(13); //Aloca um espaço de 13 bytes
-			byte codeMessage[] = {(byte)(128)};
+			byte codeMessage[] = {(byte)(130)};
 			sendData.put(codeMessage);					//Codigo da mensagem de Lookup
 			sendData.put(client.intToBytes(idWanted));
 			sendData.put(client.intToBytes(node.getIdSuc()));
@@ -133,7 +133,7 @@ public class Servidor implements Runnable{
 		else if(id == node.getIdSuc()) {
 			//Montando pacote
 			ByteBuffer sendData = ByteBuffer.allocate(13); //Aloca um espaço de 13 bytes
-			byte codeMessage[] = {(byte)(128)};
+			byte codeMessage[] = {(byte)(130)};
 			sendData.put(codeMessage);					//Codigo da mensagem  Lookup
 			sendData.put(client.intToBytes(idWanted));
 			sendData.put(client.intToBytes(node.getId()));
@@ -149,7 +149,7 @@ public class Servidor implements Runnable{
 		else if(idWanted < node.getId() && node.getId() < node.getIdAnt() && node.getId() < node.getIdSuc()) {
 			//Montando pacote
 			ByteBuffer sendData = ByteBuffer.allocate(13); //Aloca um espaço de 13 bytes
-			byte codeMessage[] = {(byte)(128)};
+			byte codeMessage[] = {(byte)(130)};
 			sendData.put(codeMessage);					//Codigo da mensagem de Lookup
 			sendData.put(client.intToBytes(idWanted));
 			sendData.put(client.intToBytes(node.getId()));
@@ -163,16 +163,47 @@ public class Servidor implements Runnable{
 		else {
 			//Montando pacote
 			ByteBuffer sendData = ByteBuffer.allocate(13); //Aloca um espaço de 13 bytes
-			byte codeMessage[] = {(byte)(128)};
+			byte codeMessage[] = {(byte)(2)};
 			sendData.put(codeMessage);					//Codigo da mensagem de Lookup
 			sendData.put(client.intToBytes(idWanted));
 			sendData.put(client.intToBytes(id));
 			sendData.put(client.intToBytes(ip));
 			//Cria um pacote onde as informações são anexadas.
-			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(node.getIpSuc().getAddress()), client.sendPort);
 			//Envia o pacote
+			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(node.getIpSuc().getAddress()), client.sendPort);
 			serverSocket.send(sendPacket);
 		}
+	}
+	
+	public void joinAnswer() throws IOException {
+				
+		
+		
+	}
+	
+	public void joinServerAnswer(ByteArrayInputStream bin) {
+		
+	}
+	
+	public void lookupServerAnswer(ByteArrayInputStream bin) {
+		//Desmontando o pacote
+		byte[] recvDataid = new byte[4];
+		recvDataid[0] =	(byte) bin.read();
+		recvDataid[1] =	(byte) bin.read();
+		recvDataid[2] =	(byte) bin.read();
+		recvDataid[3] =	(byte) bin.read();
+	
+		byte[] recvDataidSuc = new byte[4];
+		recvDataidSuc[0] = (byte) bin.read();
+		recvDataidSuc[1] = (byte) bin.read();
+		recvDataidSuc[2] = (byte) bin.read();
+		recvDataidSuc[3] = (byte) bin.read();
+		byte[] recvDataipSuc = new byte[4];
+		recvDataipSuc[0] =	(byte) bin.read();
+		recvDataipSuc[1] =	(byte) bin.read();
+		recvDataipSuc[2] =	(byte) bin.read();
+		recvDataipSuc[3] =	(byte) bin.read();
+		
 	}
 	
 	public int generateID() {

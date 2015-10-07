@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
+import java.util.Random;
 
 public class ParticipanteRede {
 	private int id;
@@ -14,52 +15,53 @@ public class ParticipanteRede {
 	private int idAntecessor;
 	private InetAddress IPAntecessor;
 	
-	public ParticipanteRede () throws SocketException {
-		
-		int id = 0; //int 
-		Enumeration e = NetworkInterface.getNetworkInterfaces();
-		NetworkInterface ni = (NetworkInterface) e.nextElement();
-		ni.getInetAddresses().nextElement();
-		Enumeration e2 = ni.getInetAddresses();
-		e2.nextElement();
-		
-		this.id = id;
-		this.IP = (InetAddress) e2.nextElement();
-		this.idAntecessor = id;
-		this.IPAntecessor = (InetAddress) e2.nextElement();
-		this.idSuccessor = id;
-		this.IPSuccessor = (InetAddress) e2.nextElement();
-	}
 	
 	public int getId() {
 		return this.id;
+	}
+	
+	public void setId(int id) {
+		this.id = id;
 	}
 	
 	public InetAddress getIp() {
 		return this.IP;
 	}
 	
+	public void setIp(InetAddress IP) {
+		this.IP = IP;
+	}
+	
 	public int getIdAnt() {
 		return this.idAntecessor;
+	}
+	
+	public void setIdAnt(int idAntecessor) {
+		this.idAntecessor = idAntecessor;
 	}
 	
 	public InetAddress getIpAnt() {
 		return this.IPAntecessor;
 	}
 	
+	public void setIpAnt(InetAddress IPAntecessor) {
+		this.IPAntecessor = IPAntecessor;
+	}
+	
 	public int getIdSuc() {
 		return this.idSuccessor;
+	}
+	
+	public void setIdSuc(int idSuccessor) {
+		this.idSuccessor = idSuccessor;
 	}
 	
 	public InetAddress getIpSuc() {
 		return this.IPSuccessor;
 	}
 	
+	public void setIpSuc(InetAddress IPSuccessor) {
+		this.IPSuccessor = IPSuccessor;
+	}
+	
 }
-
-
-
-
-
-
-
