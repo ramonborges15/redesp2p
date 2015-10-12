@@ -52,6 +52,7 @@ public class IntGraphics implements Runnable{
 	public JTextField textIdAnt;
 	public JTextField textIdSuc;
 	public JTextField textIpDestination;
+	public JTextField textShow;
 	
 	Servidor server;
 
@@ -127,7 +128,7 @@ public class IntGraphics implements Runnable{
 					
 					IP = (InetAddress) e2.nextElement();
 					
-					server.setAux(id, id, id, IP, IP, IP);
+					//server.setAux(id, id, id, IP, IP, IP);
 					
 					btnCreatenode.setEnabled(false);
 					String str = Integer.toString(server.newNode.getId());
@@ -254,7 +255,7 @@ public class IntGraphics implements Runnable{
 		textIpAnt.setColumns(10);
 		
 		JSeparator separator = new JSeparator();
-		separator.setBounds(12, 147, 576, 2);
+		separator.setBounds(12, 119, 576, 2);
 		frame.getContentPane().add(separator);
 		
 		JSeparator separator_1 = new JSeparator();
@@ -322,8 +323,17 @@ public class IntGraphics implements Runnable{
 		lblMyId.setBounds(208, 74, 53, 15);
 		frame.getContentPane().add(lblMyId);
 		
+		textShow = new JTextField();
+		textShow.setEnabled(false);
+		textShow.setBounds(83, 130, 414, 19);
+		frame.getContentPane().add(textShow);
+		textShow.setColumns(10);
+		
 	}
 	
+	public ParticipanteRede returnCreateNode() {
+		return server.aux;
+	}
 	//Converte um inteiro em um vetor de 4 bytes.
 		public byte[] intToBytes(int i) {
 			ByteBuffer bb = ByteBuffer.allocate(4);

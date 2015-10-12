@@ -64,7 +64,7 @@ public class Servidor implements Runnable{
 					case 129: 
 						break;
 					case 130: 
-						lookupServerAnswer(bin, aux);
+						lookupServerAnswer(bin, newNode);
 						break;
 					case 131: 
 								break;
@@ -103,12 +103,12 @@ public class Servidor implements Runnable{
 		byte codeMessage[] = {(byte)(128)};
 		sendData.put(codeMessage);					//Codigo da mensagem de Lookup
 		sendData.put((byte)1);
-		sendData.put(intToBytes(aux.getIdSuc()));
-		sendData.put(aux.getIpSuc().getAddress());
-		sendData.put(intToBytes(aux.getIdAnt()));
-		sendData.put(aux.getIpAnt().getAddress());
+		sendData.put(intToBytes(newNode.getIdSuc()));
+		sendData.put(newNode.getIpSuc().getAddress());
+		sendData.put(intToBytes(newNode.getIdAnt()));
+		sendData.put(newNode.getIpAnt().getAddress());
 		//Cria um pacote onde as informações são anexadas.
-		DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , aux.getIpSuc(), client.sendPort);
+		DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , newNode.getIpSuc(), client.sendPort);
 		//Envia o pacote
 		cservSocket.send(sendPacket);
 		System.out.println("joinAnswer do Servidor");
@@ -141,9 +141,11 @@ public class Servidor implements Runnable{
 		//newNode.setIpSuc(IPSuccessor);
 		g.updatingInterface(newNode);
 		//update();
+		System.out.println("joinServerAnswer");
 	}
 
 	public void lookupAnswer(ByteArrayInputStream bin) throws IOException {
+		
 		//Desmontando o pacote
 		byte[] recvDataid = new byte[4];
 		recvDataid[0] =	(byte) bin.read();
@@ -161,9 +163,9 @@ public class Servidor implements Runnable{
 		recvDataidWanted[2] =	(byte) bin.read();
 		recvDataidWanted[3] =	(byte) bin.read();
 		
-		int id = client.bytesToInt(recvDataid);
+		int id = bytesToInt(recvDataid);
 		//int ip = client.bytesToInt(recvDataip);
-		int idWanted = client.bytesToInt(recvDataidWanted);
+		int idWanted = bytesToInt(recvDataidWanted);
 		System.out.println(InetAddress.getByAddress(recvDataip));
 		//Esta entre o antecessor e o id de origem
 		if(idWanted <= newNode.getId() && idWanted >= newNode.getIdAnt()) {
@@ -200,7 +202,7 @@ public class Servidor implements Runnable{
 			cservSocket.send(sendPacket);
 		}
 		//Temos apenas um nó
-		else if(id == newNode.getIdSuc()) {
+		else if(newNode.getId() == newNode.getIdSuc() && newNode.getId() == newNode.getIdAnt()) {
 			//Guarda a informação anterior para ser mandada a funcao de resposta Join.
 			aux.setIdAnt(newNode.getId());
 			aux.setIpAnt(newNode.getIp());
@@ -253,6 +255,8 @@ public class Servidor implements Runnable{
 	}
 	
 	public void lookupServerAnswer(ByteArrayInputStream bin, ParticipanteRede p) throws UnknownHostException {
+		
+		g.textShow.setText("ID sucessor: " + newNode.getIdSuc() + " IP sucessor: " + newNode.getIpSuc().getHostAddress());
 		//Desmontando o pacote
 		byte[] recvDataid = new byte[4];
 		recvDataid[0] =	(byte) bin.read();
@@ -272,13 +276,12 @@ public class Servidor implements Runnable{
 		recvDataipSuc[2] =	(byte) bin.read();
 		recvDataipSuc[3] =	(byte) bin.read();
 		
+		//Atualiza ip e id do sucessor
 		newNode.setId(client.bytesToInt(recvDataid));
 		newNode.setIdSuc(client.bytesToInt(recvDataidSuc));
 		newNode.setIpSuc(InetAddress.getByAddress(recvDataipSuc));
-		
-		
-		
-		
+		newNode.setIdAnt(aux.getIdAnt());
+		newNode.setIpAnt(aux.getIpAnt());
 	}
 	
 	

@@ -93,7 +93,7 @@ public class Cliente {
 		//Cria um pacote onde as informações são anexadas.
 		DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , ipDestination, sendPort);
 		//Envia o pacote
-		System.out.println("entrou no cliente");
+		System.out.println("lookup do cliente");
 		clientSocket.send(sendPacket);
 		
 		clientSocket.close();
