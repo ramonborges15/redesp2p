@@ -11,31 +11,31 @@ import java.nio.ByteBuffer;
 import java.util.Random;
 
 public class Servidor implements Runnable{
-	
+	Socket csocket;
 	DatagramSocket cservSocket;
 	Cliente client;
 	ParticipanteRede newNode, aux;
-	
-	public Servidor(DatagramSocket cservSocket) {
-		this.cservSocket = cservSocket;
-		this.client = new Cliente();
-		this.newNode = new ParticipanteRede();
-		this.aux = new ParticipanteRede();
-	}
+	IntGraphics g;
 	
 	public Servidor() {
 		this.client = new Cliente();
 		this.newNode = new ParticipanteRede();
 		this.aux = new ParticipanteRede();
 	}
-	
-	public static void main(String[] args) throws IOException {
-		//System.out.println("passo no run");
+
+	public Servidor(Socket csocket) {
+	    this.csocket = csocket;
+	}
+
+	public static void main(String args[]) throws Exception {
 		
-		DatagramSocket sservSocket = new DatagramSocket(12345);
-		Servidor server = new Servidor(sservSocket);
-		System.out.println("Entro no main");
-		new Thread(server).start();
+	    ServerSocket ssock = new ServerSocket(12345);
+
+	    while (true) {
+	    	Socket sock = ssock.accept();
+	        new Thread(new Servidor(sock)).start();
+	        System.out.println("thread");
+	    }
 	}
 	
 	public void run() {
@@ -111,6 +111,7 @@ public class Servidor implements Runnable{
 		DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , aux.getIpSuc(), client.sendPort);
 		//Envia o pacote
 		cservSocket.send(sendPacket);
+		System.out.println("joinAnswer do Servidor");
 	}
 	
 	private void joinServerAnswer(ByteArrayInputStream bin) throws UnknownHostException {
@@ -138,7 +139,7 @@ public class Servidor implements Runnable{
 		//newNode.setIdSuc(idSuccessor);
 		newNode.setIpAnt(InetAddress.getByAddress(ipSuc));  //
 		//newNode.setIpSuc(IPSuccessor);
-		
+		g.updatingInterface(newNode);
 		//update();
 	}
 
@@ -274,6 +275,8 @@ public class Servidor implements Runnable{
 		aux.setId(client.bytesToInt(recvDataid));
 		aux.setIdSuc(client.bytesToInt(recvDataidSuc));
 		aux.setIpSuc(InetAddress.getByAddress(recvDataipSuc));
+		
+		
 	}
 	
 	

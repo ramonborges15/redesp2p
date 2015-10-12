@@ -54,9 +54,8 @@ public class IntGraphics implements Runnable{
 	public JTextField textIpDestination;
 	
 	Servidor server;
+
 	//ParticipanteRede newNode = new ParticipanteRede();
-	
-	
 	/*
 	  Launch the application.
 	 */
@@ -83,6 +82,15 @@ public class IntGraphics implements Runnable{
 	  Create the application.
 	 */
 	
+	public void updatingInterface(ParticipanteRede n) {
+		String str;
+		str = Integer.toString(n.getIdAnt());
+		textIdAnt.setText(str);
+		str = Integer.toString(n.getIdSuc());
+		textIdSuc.setText(str);
+		textIpAnt.setText(n.getIpAnt().getHostAddress());
+		textIpSuc.setText(n.getIpSuc().getHostAddress());
+	}
 	
 	
 	public void btnNewIdClick() {
@@ -149,7 +157,8 @@ public class IntGraphics implements Runnable{
         	   try {
         		   int id = server.newNode.getId();
             	   InetAddress ip = server.newNode.getIpSuc();
-            	   System.out.println(id);
+            	   System.out.print("btnJoinClick: ");
+            	   System.out.print(id + " ");
             	   System.out.println(ip.getHostAddress().toString());
         		   server.client.join(id, ip);
 			} catch (IOException e1) {

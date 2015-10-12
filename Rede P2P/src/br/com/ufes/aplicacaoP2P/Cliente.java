@@ -46,10 +46,9 @@ public class Cliente {
 			
 		//Cria um pacote onde as informações são anexadas.
 		DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , ipNodeSuccessor, sendPort);
-		System.out.println("Foi no Join");
+		System.out.println("Foi no Join do cliente");
 		//Envia o pacote
 		clientSocket.send(sendPacket);
-		System.out.println("Passou do Join");
 		clientSocket.close();
 	}
 	
