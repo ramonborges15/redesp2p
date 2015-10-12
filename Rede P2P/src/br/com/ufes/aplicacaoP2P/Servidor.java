@@ -164,7 +164,7 @@ public class Servidor implements Runnable{
 		int id = client.bytesToInt(recvDataid);
 		//int ip = client.bytesToInt(recvDataip);
 		int idWanted = client.bytesToInt(recvDataidWanted);
-		
+		System.out.println(InetAddress.getByAddress(recvDataip));
 		//Esta entre o antecessor e o id de origem
 		if(idWanted <= newNode.getId() && idWanted >= newNode.getIdAnt()) {
 			//Guarda a informação anterior para ser mandada a funcao de resposta Join.
@@ -178,7 +178,7 @@ public class Servidor implements Runnable{
 			sendData.put(intToBytes(newNode.getId()));
 			sendData.put(newNode.getIp().getAddress());
 			//Cria um pacote onde as informações são anexadas.
-			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(recvDataip), client.sendPort);
+			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(recvDataip), 12345);
 			//Envia o pacote
 			cservSocket.send(sendPacket);
 		}
@@ -195,7 +195,7 @@ public class Servidor implements Runnable{
 			sendData.put(intToBytes(newNode.getIdSuc()));
 			sendData.put(newNode.getIpSuc().getAddress());
 			//Cria um pacote onde as informações são anexadas.
-			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(recvDataip), client.sendPort);
+			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(recvDataip), 12345);
 			//Envia o pacote
 			cservSocket.send(sendPacket);
 		}
@@ -212,7 +212,7 @@ public class Servidor implements Runnable{
 			sendData.put(intToBytes(newNode.getId()));
 			sendData.put(newNode.getIp().getAddress());
 			//Cria um pacote onde as informações são anexadas.
-			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(recvDataip), client.sendPort);
+			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(recvDataip), 12345);
 			//Envia o pacote
 			cservSocket.send(sendPacket);
 		}
@@ -232,7 +232,7 @@ public class Servidor implements Runnable{
 			sendData.put(intToBytes(newNode.getId()));
 			sendData.put(newNode.getIp().getAddress());
 			//Cria um pacote onde as informações são anexadas.
-			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(recvDataip), client.sendPort);
+			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(recvDataip), 12345);
 			//Envia o pacote
 			cservSocket.send(sendPacket);
 		}
@@ -272,9 +272,11 @@ public class Servidor implements Runnable{
 		recvDataipSuc[2] =	(byte) bin.read();
 		recvDataipSuc[3] =	(byte) bin.read();
 		
-		aux.setId(client.bytesToInt(recvDataid));
-		aux.setIdSuc(client.bytesToInt(recvDataidSuc));
-		aux.setIpSuc(InetAddress.getByAddress(recvDataipSuc));
+		newNode.setId(client.bytesToInt(recvDataid));
+		newNode.setIdSuc(client.bytesToInt(recvDataidSuc));
+		newNode.setIpSuc(InetAddress.getByAddress(recvDataipSuc));
+		
+		
 		
 		
 	}
@@ -288,20 +290,20 @@ public class Servidor implements Runnable{
 	}
 	
 	//Converte um inteiro em um vetor de 4 bytes.
-		public byte[] intToBytes(int i) {
-			ByteBuffer bb = ByteBuffer.allocate(4);
-			bb.putInt(i);
-			return bb.array();
-		}
+	public byte[] intToBytes(int i) {
+		ByteBuffer bb = ByteBuffer.allocate(4);
+		bb.putInt(i);
+		return bb.array();
+	}
 		
-		public static int bytesToInt(byte[] b) {
-			int value = 0;
-			for (int i = 0; i < 4; i++) {
-				int shift = (4 - 1 - i) * 8;
-				value += (b[i] & 0x000000FF) << shift;
-			}
-			return value;
+	public static int bytesToInt(byte[] b) {
+		int value = 0;
+		for (int i = 0; i < 4; i++) {
+			int shift = (4 - 1 - i) * 8;
+			value += (b[i] & 0x000000FF) << shift;
 		}
+		return value;
+	}
 }
 
 
