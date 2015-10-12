@@ -31,46 +31,73 @@ import javax.swing.SwingConstants;
 import javax.swing.JEditorPane;
 
 import java.awt.TextField;
+import java.awt.Font;
+import java.awt.Color;
 
 public class IntGraphics implements Runnable{
 
 	public JFrame frame;
+	
+	public JButton btnLeave; 
+	public JButton btnLookup;
+	public JButton btnUpdate;
+	public JButton btnCreatenode;
+	public JButton btnJoin ;
+	public JButton btnIdgenerate;
+	
 	public JTextField textMyIP;
 	public JTextField textMyID;
 	public JTextField textIpAnt;
 	public JTextField textIpSuc;
 	public JTextField textIdAnt;
 	public JTextField textIdSuc;
-	Servidor server = new Servidor();
-	Cliente client = new Cliente();
-	public JTextField textRecvLookup;
-	public JButton btnLeave; 
-	public JButton btnLookup;
-	public JButton btnUpdate;
-	public JButton btnCreatenode;
-	public JButton btnJoin ;
-	ParticipanteRede newNode = new ParticipanteRede();
+	public JTextField textIpDestination;
+	
+	Servidor server;
+	//ParticipanteRede newNode = new ParticipanteRede();
+	
 	
 	/*
 	  Launch the application.
 	 */
 	
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				IntGraphics window = new IntGraphics();
-				window.frame.setVisible(true);
-			}
-		});
+	public static void main(String[] args) throws SocketException {
+		Servidor serv = new Servidor();
+		IntGraphics window = new IntGraphics(serv);
+		window.frame.setVisible(true);
+		new Thread(window).start();
 	}
 	
-	/*
-	  Create the application.
-	 */
-	public IntGraphics() {
+	public IntGraphics(Servidor server) {
+		this.server = server;
 		initialize();
 	}
 	
+	public void run() {
+		btnCreateClick();
+		btnLookupClick();
+		btnJoinClick();
+		btnNewIdClick();
+	}
+	/*
+	  Create the application.
+	 */
+	
+	
+	
+	public void btnNewIdClick() {
+		btnIdgenerate.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e)
+            {
+            	int id;
+				Random random  = new Random(System.currentTimeMillis());
+				id = random.nextInt((int) Math.pow(2, 32) - 1);
+				
+				String str = Integer.toString(id);
+				textMyID.setText(str);
+            }
+		});
+	}
 	
 	public void btnCreateClick() {
 		 btnCreatenode.addActionListener(new ActionListener() {
@@ -92,25 +119,20 @@ public class IntGraphics implements Runnable{
 					
 					IP = (InetAddress) e2.nextElement();
 					
-					newNode.setId(id);
-					newNode.setIp(IP);
-					newNode.setIdAnt(id);
-					newNode.setIpAnt(IP);
-					newNode.setIdSuc(id);
-					newNode.setIpSuc(IP);
+					server.setAux(id, id, id, IP, IP, IP);
 					
 					btnCreatenode.setEnabled(false);
-					String str = Integer.toString(newNode.getId());
+					String str = Integer.toString(server.newNode.getId());
 					textMyID.setText(str);
-					textMyIP.setText(newNode.getIp().getHostName());
+					textMyIP.setText(server.newNode.getIp().getHostName());
 					
-					String str2 = Integer.toString(newNode.getIdAnt());
+					String str2 = Integer.toString(server.newNode.getIdAnt());
 					textIdAnt.setText(str2);
-					textIpAnt.setText(newNode.getIpAnt().getHostName());
+					textIpAnt.setText(server.newNode.getIpAnt().getHostName());
 					
-					String str3 = Integer.toString(newNode.getIdSuc());
+					String str3 = Integer.toString(server.newNode.getIdSuc());
 					textIdSuc.setText(str3);
-					textIpSuc.setText(newNode.getIpSuc().getHostName());
+					textIpSuc.setText(server.newNode.getIpSuc().getHostName());
 					
 				} catch (SocketException e3) {
 					// TODO Auto-generated catch block
@@ -124,25 +146,15 @@ public class IntGraphics implements Runnable{
 		 btnJoin.addActionListener(new ActionListener() {
            public void actionPerformed(ActionEvent e)
            {
-        	newNode = server.getAux();
-			//Montando pacote
-			
-			ByteBuffer sendData = ByteBuffer.allocate(18); //Aloca um espaço de 18 bytes
-			byte codeMessage[] = {(byte)(128)};
-			sendData.put(codeMessage);					//Codigo da mensagem de Lookup
-			sendData.put((byte) 1);							
-			sendData.put(client.intToBytes(newNode.getIdSuc()));			//id sucessor.
-			sendData.put(newNode.getIpSuc().getAddress());			//ip sucessor.
-			sendData.put(client.intToBytes(newNode.getIdAnt()));		//id antecessor.
-			sendData.put(newNode.getIpAnt().getAddress());				//ip antecessor
-			
-			btnJoin.setEnabled(false);
-			String str = Integer.toString(newNode.getIdAnt());
-			textMyID.setText(str);
-			textMyIP.setText(newNode.getIpAnt().getHostName());
-			
-			//Cria um pacote onde as informações são anexadas.
-			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , newNode.getIpSuc(), client.sendPort);
+        	   try {
+        		   int id = server.newNode.getId();
+            	   InetAddress ip = server.newNode.getIpSuc();
+            	   System.out.println(id);
+            	   System.out.println(ip.getHostAddress().toString());
+        		   server.client.join(id, ip);
+			} catch (IOException e1) {
+					e1.printStackTrace();
+			}
            }
        }); 
 	}
@@ -151,22 +163,18 @@ public class IntGraphics implements Runnable{
 		 btnLookup.addActionListener(new ActionListener() {
            public void actionPerformed(ActionEvent e)
            {
-           		try {
-           			int idWanted;
-           			Random random  = new Random(System.currentTimeMillis());
-					idWanted = random.nextInt((int) Math.pow(2, 32) - 1);
-					
-					InetAddress ip = InetAddress.getByName(textRecvLookup.getText());
-					btnLookup.setEnabled(false);
-	           		btnJoin.setEnabled(true);
-	           		client.lookup(idWanted, ip, idWanted);
-				} catch (UnknownHostException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+        	   try {
+        		   InetAddress ipDestination =  InetAddress.getByName(textIpDestination.getText());
+        		   int idSource = Integer.parseInt(textMyID.getText());
+        		   InetAddress ipSource = InetAddress.getByName(textMyIP.getText());
+        		   server.client.lookup(idSource, ipSource, ipDestination);
+        		   System.out.println("passo aqui");
+        	   } catch (UnknownHostException e1) {
+				e1.printStackTrace();
+        	   } catch (IOException e1) {
+				e1.printStackTrace();
+			}
+        	   
            }
        }); 
 	}
@@ -179,9 +187,6 @@ public class IntGraphics implements Runnable{
           }
       }); 
 	}
-	
-	
-
 	/*
 	  Initialize the contents of the frame.
 	 */
@@ -198,7 +203,7 @@ public class IntGraphics implements Runnable{
 		frame.getContentPane().add(this.btnLeave);
 	
 		this.btnLookup = new JButton("LookUp");
-		this.btnLookup.setBounds(55, 161, 88, 23);
+		this.btnLookup.setBounds(295, 161, 88, 23);
 		frame.getContentPane().add(this.btnLookup);
 		
 		this.btnUpdate = new JButton("Update");
@@ -212,93 +217,102 @@ public class IntGraphics implements Runnable{
 		this.btnJoin = new JButton("Join");
 		this.btnJoin.setBounds(265, 218, 60, 25);
 		frame.getContentPane().add(this.btnJoin);
-		this.btnJoin.setEnabled(false);
+		
+		this.btnIdgenerate = new JButton("ChangeID");
+		this.btnIdgenerate.setFont(new Font("Dialog", Font.BOLD, 12));
+		this.btnIdgenerate.setBounds(395, 161, 102, 23);
+		frame.getContentPane().add(this.btnIdgenerate);
 		
 		textMyIP = new JTextField();
+		textMyIP.setHorizontalAlignment(SwingConstants.CENTER);
 		textMyIP.setEditable(false);
-		textMyIP.setBounds(250, 61, 102, 20);
+		textMyIP.setBounds(261, 40, 102, 20);
 		frame.getContentPane().add(textMyIP);
 		textMyIP.setColumns(10);
 		textMyIP.enableInputMethods(false);
 		
 		textMyID = new JTextField();
-		textMyID.setBounds(250, 93, 102, 20);
+		textMyID.setHorizontalAlignment(SwingConstants.CENTER);
+		textMyID.setBounds(261, 72, 102, 20);
 		frame.getContentPane().add(textMyID);
 		textMyID.setColumns(10);
 		
 		textIpAnt = new JTextField();
+		textIpAnt.setHorizontalAlignment(SwingConstants.CENTER);
 		textIpAnt.setEditable(false);
-		textIpAnt.setBounds(61, 61, 104, 20);
+		textIpAnt.setBounds(56, 39, 104, 20);
 		frame.getContentPane().add(textIpAnt);
 		textIpAnt.setColumns(10);
 		
+		JSeparator separator = new JSeparator();
+		separator.setBounds(12, 147, 576, 2);
+		frame.getContentPane().add(separator);
+		
 		JSeparator separator_1 = new JSeparator();
-		separator_1.setBounds(22, 196, 532, 20);
+		separator_1.setBounds(12, 196, 576, 20);
 		frame.getContentPane().add(separator_1);
 		
 		textIpSuc = new JTextField();
+		textIpSuc.setHorizontalAlignment(SwingConstants.CENTER);
 		textIpSuc.setEditable(false);
-		textIpSuc.setBounds(432, 61, 103, 20);
+		textIpSuc.setBounds(432, 39, 103, 20);
 		frame.getContentPane().add(textIpSuc);
 		textIpSuc.setColumns(10);
 		
 		textIdAnt = new JTextField();
+		textIdAnt.setHorizontalAlignment(SwingConstants.CENTER);
 		textIdAnt.setEditable(false);
-		textIdAnt.setBounds(61, 93, 104, 20);
+		textIdAnt.setBounds(56, 71, 104, 20);
 		frame.getContentPane().add(textIdAnt);
 		textIdAnt.setColumns(10);
 		
 		textIdSuc = new JTextField();
+		textIdSuc.setHorizontalAlignment(SwingConstants.CENTER);
 		textIdSuc.setEditable(false);
-		textIdSuc.setBounds(432, 93, 103, 20);
+		textIdSuc.setBounds(432, 71, 103, 20);
 		frame.getContentPane().add(textIdSuc);
 		textIdSuc.setColumns(10);
 		
+		textIpDestination = new JTextField();
+		textIpDestination.setText("IP Destination");
+		textIpDestination.setHorizontalAlignment(SwingConstants.CENTER);
+		textIpDestination.setForeground(Color.LIGHT_GRAY);
+		textIpDestination.setBounds(83, 161, 178, 23);
+		frame.getContentPane().add(textIpDestination);
+		textIpDestination.setColumns(10);
+		
 		JLabel lblAntecessor = new JLabel("Antecessor");
-		lblAntecessor.setBounds(72, 34, 89, 15);
+		lblAntecessor.setBounds(67, 12, 89, 15);
 		frame.getContentPane().add(lblAntecessor);
 		
 		JLabel lblSucessor = new JLabel("Sucessor");
-		lblSucessor.setBounds(449, 34, 70, 15);
+		lblSucessor.setBounds(449, 12, 70, 15);
 		frame.getContentPane().add(lblSucessor);
 		
 		JLabel lblIp = new JLabel("IP:");
-		lblIp.setBounds(40, 63, 32, 15);
+		lblIp.setBounds(35, 41, 32, 15);
 		frame.getContentPane().add(lblIp);
 		
 		JLabel lblId = new JLabel("ID:");
-		lblId.setBounds(40, 95, 70, 15);
+		lblId.setBounds(35, 73, 70, 15);
 		frame.getContentPane().add(lblId);
 		
 		JLabel lblIp_1 = new JLabel("IP:");
-		lblIp_1.setBounds(410, 63, 38, 15);
+		lblIp_1.setBounds(410, 41, 38, 15);
 		frame.getContentPane().add(lblIp_1);
 		
 		JLabel lblId_1 = new JLabel("ID:");
-		lblId_1.setBounds(410, 98, 32, 15);
+		lblId_1.setBounds(410, 76, 32, 15);
 		frame.getContentPane().add(lblId_1);
 		
 		JLabel lblMyIp = new JLabel("My IP:");
-		lblMyIp.setBounds(197, 63, 70, 15);
+		lblMyIp.setBounds(208, 42, 70, 15);
 		frame.getContentPane().add(lblMyIp);
 		
 		JLabel lblMyId = new JLabel("My ID:");
-		lblMyId.setBounds(197, 95, 53, 15);
+		lblMyId.setBounds(208, 74, 53, 15);
 		frame.getContentPane().add(lblMyId);
 		
-		
-		textRecvLookup = new JTextField();
-		textRecvLookup.setBounds(155, 163, 380, 19);
-		frame.getContentPane().add(textRecvLookup);
-		textRecvLookup.setColumns(10);
-		
-		
-		btnCreateClick();
-		btnLookupClick();
-		btnJoinClick();
-		/*btnLeaveClick();
-		
-		btnUpdateClick(); */
 	}
 	
 	//Converte um inteiro em um vetor de 4 bytes.
@@ -315,11 +329,5 @@ public class IntGraphics implements Runnable{
 				value += (b[i] & 0x000000FF) << shift;
 			}
 			return value;
-		}
-
-		@Override
-		public void run() {
-			// TODO Auto-generated method stub
-			
 		}
 }

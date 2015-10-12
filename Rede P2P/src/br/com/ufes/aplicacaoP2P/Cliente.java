@@ -12,14 +12,9 @@ import java.io.ByteArrayInputStream;
 
 
 
-public class Cliente implements Runnable{
+public class Cliente {
 	
 	int sendPort = 12345;
-	
-	public void run() {
-	   
-	}
-	
 	
 	//Converte um inteiro em um vetor de 4 bytes.
 	public byte[] intToBytes(int i) {
@@ -51,10 +46,10 @@ public class Cliente implements Runnable{
 			
 		//Cria um pacote onde as informações são anexadas.
 		DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , ipNodeSuccessor, sendPort);
-		
+		System.out.println("Foi no Join");
 		//Envia o pacote
 		clientSocket.send(sendPacket);
-		
+		System.out.println("Passou do Join");
 		clientSocket.close();
 	}
 	
@@ -82,7 +77,7 @@ public class Cliente implements Runnable{
 		clientSocker.close();
 	}
 	
-	public void lookup(int idSource, InetAddress ipSource,int idWanted) throws IOException {
+	public void lookup(int idSource, InetAddress ipSource, InetAddress ipDestination) throws IOException {
 		//idSource - identificador de origem da procura.
 		
 		//Cria o socket do lado cliente.
@@ -92,13 +87,14 @@ public class Cliente implements Runnable{
 		ByteBuffer sendData = ByteBuffer.allocate(13); //Aloca um espaço de 13 bytes
 		byte codeMessage[] = {(byte)(2)};
 		sendData.put(codeMessage);					//Codigo da mensagem de Lookup
-		sendData.put(intToBytes(idSource));			//id participante da rede.
-		sendData.put(ipSource.getAddress());	//ip participante da rede.
-		sendData.put(intToBytes(idWanted));			 	//id do nó que deseja participar da rede.
+		sendData.put(intToBytes(idSource));			//id meu.
+		sendData.put(ipSource.getAddress());	//ip meu.
+		sendData.put(intToBytes(idSource));			
 		
 		//Cria um pacote onde as informações são anexadas.
-		DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , ipSource, sendPort);
+		DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , ipDestination, sendPort);
 		//Envia o pacote
+		System.out.println("entrou no cliente");
 		clientSocket.send(sendPacket);
 		
 		clientSocket.close();
