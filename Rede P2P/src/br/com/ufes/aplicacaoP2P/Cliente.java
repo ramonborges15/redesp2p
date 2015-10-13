@@ -93,10 +93,13 @@ public class Cliente {
 		//Cria um pacote onde as informações são anexadas.
 		DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , ipDestination, sendPort);
 		//Envia o pacote
-		System.out.println("lookup do cliente");
-		clientSocket.send(sendPacket);
 		
-		clientSocket.close();
+		clientSocket.send(sendPacket);
+		System.out.println(ipDestination);
+		System.out.println(sendPort);
+		System.out.println("lookup do cliente");
+		
+		//clientSocket.close();
 	}
 	
 	public void update(int idSource, int idNewSuc, InetAddress ipNewSuc, InetAddress ipNodeAnt) throws IOException {

@@ -22,58 +22,67 @@ public class Servidor implements Runnable{
 		this.newNode = new ParticipanteRede();
 		this.aux = new ParticipanteRede();
 	}
-
+	
+	
+	
 	public Servidor(Socket csocket) {
 	    this.csocket = csocket;
 	}
 
 	public static void main(String args[]) throws Exception {
-		
+		System.out.println("Inicia Servidor");
 	    ServerSocket ssock = new ServerSocket(12345);
-
 	    while (true) {
 	    	Socket sock = ssock.accept();
-	        new Thread(new Servidor(sock)).start();
-	        System.out.println("thread");
+	    	System.out.println("thread ");
+	    	new Thread(new Servidor(sock)).start();
 	    }
 	}
 	
 	public void run() {
-		char op;
-		while(true) {
-			DatagramPacket recvPacket = new DatagramPacket(new byte[1024] , 1024);
-			try {
-				
-				ByteArrayInputStream bin = new ByteArrayInputStream(recvPacket.getData());
-				op = (char) bin.read();
-				
-				switch(op) {
-					case '0':
-						joinAnswer(bin);
-						break;
-					case '1': 
-						break;
-					case '2': 
-						lookupAnswer(bin);
-						break;
-					case '3': 
-						break;
-					case 128: 
-						joinServerAnswer(bin);
-						break;
-					case 129: 
-						break;
-					case 130: 
-						lookupServerAnswer(bin, newNode);
-						break;
-					case 131: 
-								break;
-					default:
-				}
-			
-			} catch (IOException e) {
-				e.printStackTrace();
-			} 
+		
+		try {
+			char op;
+			DatagramSocket theSocket = new DatagramSocket(12345);
+			while(true) {
+				DatagramPacket recvPacket = new DatagramPacket(new byte[256] , 256);
+				theSocket.receive(recvPacket);
+				try {
+					ByteArrayInputStream bin = new ByteArrayInputStream(recvPacket.getData());
+					op = (char) bin.read();
+					
+					switch(op) {
+						case '0':
+							joinAnswer(bin);
+							break;
+						case '1': 
+							break;
+						case '2': 
+							System.out.println("Menu Servidor");
+							lookupAnswer(bin, recvPacket);
+							System.out.println("Passsou do Menu Servidor");
+							break;
+						case '3': 
+							break;
+						case 128: 
+							joinServerAnswer(bin);
+							break;
+						case 129: 
+							break;
+						case 130: 
+							lookupServerAnswer(bin, newNode);
+							break;
+						case 131: 
+									break;
+						default:
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				} 
+			}
+		
+		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
 	}
 	
@@ -144,8 +153,8 @@ public class Servidor implements Runnable{
 		System.out.println("joinServerAnswer");
 	}
 
-	public void lookupAnswer(ByteArrayInputStream bin) throws IOException {
-		
+	public void lookupAnswer(ByteArrayInputStream bin, DatagramPacket pckt) throws IOException {
+		System.out.println("!");
 		//Desmontando o pacote
 		byte[] recvDataid = new byte[4];
 		recvDataid[0] =	(byte) bin.read();
@@ -214,7 +223,7 @@ public class Servidor implements Runnable{
 			sendData.put(intToBytes(newNode.getId()));
 			sendData.put(newNode.getIp().getAddress());
 			//Cria um pacote onde as informações são anexadas.
-			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(recvDataip), 12345);
+			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(recvDataip), pckt.getPort());
 			//Envia o pacote
 			cservSocket.send(sendPacket);
 		}

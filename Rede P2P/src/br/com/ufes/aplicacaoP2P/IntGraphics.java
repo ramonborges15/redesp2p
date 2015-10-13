@@ -34,7 +34,7 @@ import java.awt.TextField;
 import java.awt.Font;
 import java.awt.Color;
 
-public class IntGraphics implements Runnable{
+public class IntGraphics implements Runnable{  
 
 	public JFrame frame;
 	
@@ -55,7 +55,7 @@ public class IntGraphics implements Runnable{
 	public JTextField textShow;
 	
 	Servidor server;
-
+	Cliente c;
 	//ParticipanteRede newNode = new ParticipanteRede();
 	/*
 	  Launch the application.
@@ -63,13 +63,15 @@ public class IntGraphics implements Runnable{
 	
 	public static void main(String[] args) throws SocketException {
 		Servidor serv = new Servidor();
-		IntGraphics window = new IntGraphics(serv);
+		Cliente client = new Cliente();
+		IntGraphics window = new IntGraphics(serv, client);
 		window.frame.setVisible(true);
 		new Thread(window).start();
 	}
 	
-	public IntGraphics(Servidor server) {
+	public IntGraphics(Servidor server, Cliente c) {
 		this.server = server;
+		this.c = c;
 		initialize();
 	}
 	
@@ -128,7 +130,7 @@ public class IntGraphics implements Runnable{
 					
 					IP = (InetAddress) e2.nextElement();
 					
-					//server.setAux(id, id, id, IP, IP, IP);
+					server.setAux(id, id, id, IP, IP, IP);
 					
 					btnCreatenode.setEnabled(false);
 					String str = Integer.toString(server.newNode.getId());
@@ -161,7 +163,7 @@ public class IntGraphics implements Runnable{
             	   System.out.print("btnJoinClick: ");
             	   System.out.print(id + " ");
             	   System.out.println(ip.getHostAddress().toString());
-        		   server.client.join(id, ip);
+        		   c.join(id, ip);
 			} catch (IOException e1) {
 					e1.printStackTrace();
 			}
@@ -177,8 +179,11 @@ public class IntGraphics implements Runnable{
         		   InetAddress ipDestination =  InetAddress.getByName(textIpDestination.getText());
         		   int idSource = Integer.parseInt(textMyID.getText());
         		   InetAddress ipSource = InetAddress.getByName(textMyIP.getText());
-        		   server.client.lookup(idSource, ipSource, ipDestination);
-        		   System.out.println("passo aqui");
+        		   c.lookup(idSource, ipSource, ipDestination);
+        		   
+        		   System.out.println(ipDestination.getHostAddress());
+        		   System.out.println(idSource);
+        		   System.out.println(ipSource.getHostAddress());
         	   } catch (UnknownHostException e1) {
 				e1.printStackTrace();
         	   } catch (IOException e1) {
@@ -329,6 +334,10 @@ public class IntGraphics implements Runnable{
 		frame.getContentPane().add(textShow);
 		textShow.setColumns(10);
 		
+		btnCreateClick();
+		btnLookupClick();
+		btnJoinClick();
+		btnNewIdClick();
 	}
 	
 	public ParticipanteRede returnCreateNode() {
