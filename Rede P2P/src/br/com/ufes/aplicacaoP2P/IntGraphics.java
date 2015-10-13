@@ -170,7 +170,7 @@ public class IntGraphics implements Runnable{
            }
        }); 
 	}
-	//
+	
 	public void btnLookupClick() {
 		 btnLookup.addActionListener(new ActionListener() {
            public void actionPerformed(ActionEvent e)
