@@ -50,7 +50,7 @@ public class Servidor implements Runnable{
 				try {
 					ByteArrayInputStream bin = new ByteArrayInputStream(recvPacket.getData());
 					op = (char) bin.read();
-					
+					//
 					switch(op) {
 						case '0':
 							joinAnswer(bin);
