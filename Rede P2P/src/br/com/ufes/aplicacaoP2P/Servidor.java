@@ -32,12 +32,24 @@ public class Servidor implements Runnable{
 
 	public static void main(String args[]) throws Exception {
 		System.out.println("Inicia Servidor");
-	    ServerSocket ssock = new ServerSocket(12345);
-	    while (true) {
+		ServerSocket ssock = new ServerSocket(12345);
+		
+	    while(true) {
+	    	new Thread() {
+	    		Socket sock = ssock.accept();
+				public void run() {
+					run();
+				}
+			}.start();
+			
+			
+	   }
+	    
+	    /*while (true) {
 	    	Socket sock = ssock.accept();
 	    	System.out.println("thread ");
 	    	new Thread(new Servidor(sock)).start();
-	    }
+	    }*/
 	}
 	
 	public void run() {
@@ -149,7 +161,7 @@ public class Servidor implements Runnable{
 		//newNode.setIdSuc(idSuccessor);
 		newNode.setIpAnt(InetAddress.getByAddress(ipSuc));  //
 		//newNode.setIpSuc(IPSuccessor);
-		g.updatingInterface(newNode);
+		//g.updatingInterface(newNode);
 		//update();
 		System.out.println("joinServerAnswer");
 	}
@@ -266,7 +278,7 @@ public class Servidor implements Runnable{
 	
 	public void lookupServerAnswer(ByteArrayInputStream bin, ParticipanteRede p) throws UnknownHostException {
 		
-		g.textShow.setText("ID sucessor: " + newNode.getIdSuc() + " IP sucessor: " + newNode.getIpSuc().getHostAddress());
+		//g.textShow.setText("ID sucessor: " + newNode.getIdSuc() + " IP sucessor: " + newNode.getIpSuc().getHostAddress());
 		//Desmontando o pacote
 		byte[] recvDataid = new byte[4];
 		recvDataid[0] =	(byte) bin.read();

@@ -71,7 +71,7 @@ public class IntGraphics implements Runnable{
 				serv.run();
 			}
 		}.start();
-		new Thread(window).start();
+		//new Thread(window).start();
 	}
 	
 	public IntGraphics(Servidor server, Cliente c) {
@@ -186,9 +186,6 @@ public class IntGraphics implements Runnable{
         		   InetAddress ipSource = InetAddress.getByName(textMyIP.getText());
         		   c.lookup(idSource, ipSource, ipDestination);
         		   
-        		   System.out.println(ipDestination.getHostAddress());
-        		   System.out.println(idSource);
-        		   System.out.println(ipSource.getHostAddress());
         	   } catch (UnknownHostException e1) {
 				e1.printStackTrace();
         	   } catch (IOException e1) {
