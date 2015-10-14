@@ -11,6 +11,7 @@ import java.nio.ByteBuffer;
 import java.util.Random;
 
 public class Servidor implements Runnable{
+	
 	Socket csocket;
 	DatagramSocket cservSocket;
 	Cliente client;
@@ -50,7 +51,7 @@ public class Servidor implements Runnable{
 				try {
 					ByteArrayInputStream bin = new ByteArrayInputStream(recvPacket.getData());
 					op = (char) bin.read();
-					
+					System.out.println(op);
 					switch(op) {
 						case '0':
 							joinAnswer(bin);

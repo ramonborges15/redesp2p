@@ -49,7 +49,7 @@ public class Cliente {
 		System.out.println("Foi no Join do cliente");
 		//Envia o pacote
 		clientSocket.send(sendPacket);
-		clientSocket.close();
+		//clientSocket.close();
 	}
 	
 	public void leave(int idNodeLeaving, ParticipanteRede nodeAnt, ParticipanteRede nodeSuc) throws IOException {

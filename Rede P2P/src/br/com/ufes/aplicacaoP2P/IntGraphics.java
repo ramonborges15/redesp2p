@@ -66,6 +66,11 @@ public class IntGraphics implements Runnable{
 		Cliente client = new Cliente();
 		IntGraphics window = new IntGraphics(serv, client);
 		window.frame.setVisible(true);
+		new Thread() {
+			public void run() {
+				serv.run();
+			}
+		}.start();
 		new Thread(window).start();
 	}
 	
