@@ -11,9 +11,8 @@ import java.lang.*;
 import java.io.ByteArrayInputStream;
 
 
-
 public class Cliente {
-	
+
 	int sendPort = 12345;
 	
 	//Converte um inteiro em um vetor de 4 bytes.
