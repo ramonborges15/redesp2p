@@ -19,8 +19,7 @@ public class Servidor implements Runnable{
 	ParticipanteRede newNode, aux;
 	
 	public Servidor() {
-		this.newNode = new ParticipanteRede();
-		this.aux = new ParticipanteRede();
+		
 	}
 	/*
 	public Servidor(DatagramSocket csocket) {
@@ -28,9 +27,11 @@ public class Servidor implements Runnable{
 	}
 	*/
 	
-	public Servidor(DatagramSocket server, DatagramPacket pkt) {
-	    this.recvPacket = pkt;
+	public Servidor(DatagramSocket server, DatagramPacket pkt, ParticipanteRede newNode, ParticipanteRede aux) {
 	    this.cservSocket = server;
+	    this.recvPacket = pkt;
+	    this.newNode = newNode;
+		this.aux = aux;
 	}
 	/*
 	public static void main(String args[]) throws Exception {
@@ -55,25 +56,28 @@ public class Servidor implements Runnable{
 	}
 	*/
 	public void run() {
-		char op;
-		while(true) {
+		int op;
+		//while(true) {
 			//DatagramPacket recvPacket = new DatagramPacket(new byte[256] , 256);
 			//cservSocket.receive(recvPacket);
+		
 			try {
 				ByteArrayInputStream bin = new ByteArrayInputStream(recvPacket.getData());
 				
-				op = (char) bin.read();
+				op = bin.read();
+				
 				System.out.println(op);
 				switch(op) {
-					case '0':
+					case  0:
 						joinAnswer(bin);
 						break;
-					case '1': 
+					case  1: 
 						break;
-					case '2': 
+					case  2: 
+						System.out.println("LookupAnswer");
 						lookupAnswer(bin, recvPacket);
 						break;
-					case '3': 
+					case  3: 
 						break;
 					case 128: 
 						joinServerAnswer(bin);
@@ -90,7 +94,7 @@ public class Servidor implements Runnable{
 			} catch (IOException e) {
 				e.printStackTrace();
 			} 
-		}
+		//}
 	}
 	
 	public ParticipanteRede getNode() {
@@ -179,10 +183,15 @@ public class Servidor implements Runnable{
 		int id = bytesToInt(recvDataid);
 		//int ip = client.bytesToInt(recvDataip);
 		int idWanted = bytesToInt(recvDataidWanted);
-		System.out.println(InetAddress.getByAddress(recvDataip));
+		System.out.println(InetAddress.getByAddress(recvDataip) + " " +idWanted);
 		//Esta entre o antecessor e o id de origem
+		System.out.println("------------------------------------------------------------");
+		System.out.println(newNode.getId());
+		System.out.println(newNode.getIp().getHostAddress());
+		System.out.println(newNode.getIdAnt());
 		if(idWanted <= newNode.getId() && idWanted >= newNode.getIdAnt()) {
 			//Guarda a informação anterior para ser mandada a funcao de resposta Join.
+			System.out.println("Passou da primeira condicao");
 			aux.setIdAnt(newNode.getIdAnt());
 			aux.setIpAnt(newNode.getIpAnt());
 			//Montando pacote
@@ -199,6 +208,7 @@ public class Servidor implements Runnable{
 		}
 		//Esta entre o id de origem e o sucessor
 		else if(idWanted > newNode.getId() && idWanted <= newNode.getIdSuc()) {
+			System.out.println("Passou da segunda condicao");
 			//Guarda a informação anterior para ser mandada a funcao de resposta Join.
 			aux.setIdAnt(newNode.getId());
 			aux.setIpAnt(newNode.getIp());
@@ -216,6 +226,7 @@ public class Servidor implements Runnable{
 		}
 		//Temos apenas um nó
 		else if(newNode.getId() == newNode.getIdSuc() && newNode.getId() == newNode.getIdAnt()) {
+			System.out.println("Passou da terceira condicao");
 			//Guarda a informação anterior para ser mandada a funcao de resposta Join.
 			aux.setIdAnt(newNode.getId());
 			aux.setIpAnt(newNode.getIp());
@@ -227,7 +238,7 @@ public class Servidor implements Runnable{
 			sendData.put(intToBytes(newNode.getId()));
 			sendData.put(newNode.getIp().getAddress());
 			//Cria um pacote onde as informações são anexadas.
-			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(recvDataip), pckt.getPort());
+			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(recvDataip), 12345);
 			//Envia o pacote
 			cservSocket.send(sendPacket);
 		}
@@ -235,6 +246,7 @@ public class Servidor implements Runnable{
 		//No de origem é o menor da rede.
 		//Ex: rede com 3 nos -- noAntecessorId=27   noOrigemId=8  noSucessorId=14       novoNoId=41
 		else if(idWanted < newNode.getId() && newNode.getId() < newNode.getIdAnt() && newNode.getId() < newNode.getIdSuc()) {
+			System.out.println("Passou da quarta condicao");
 			//Guarda a informação anterior para ser mandada a funcao de resposta Join.
 			aux.setIdAnt(newNode.getIdSuc());
 			aux.setIpAnt(newNode.getIpSuc());
@@ -253,6 +265,7 @@ public class Servidor implements Runnable{
 		}
 		
 		else {
+			System.out.println("Passou para o else");
 			//Montando pacote
 			ByteBuffer sendData = ByteBuffer.allocate(13); //Aloca um espaço de 13 bytes
 			byte codeMessage[] = {(byte)(2)};

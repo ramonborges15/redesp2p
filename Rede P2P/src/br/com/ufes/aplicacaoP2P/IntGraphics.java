@@ -52,8 +52,9 @@ public class IntGraphics implements Runnable{
 	public JTextField textIdSuc;
 	public JTextField textIpDestination;
 	
-	Servidor server;
+	ParticipanteRede newNode;
 	Cliente c;
+	
 	/*
 	public static void main(String[] args) throws SocketException {
 		Servidor serv = new Servidor();
@@ -69,9 +70,9 @@ public class IntGraphics implements Runnable{
 		//new Thread(window).start();
 	}
 	*/
-	public IntGraphics(Servidor server, Cliente c) {
-		this.server = server;
-		this.c = c;
+	public IntGraphics(ParticipanteRede newNode) {
+		this.c = new Cliente();
+		this.newNode = newNode;
 		initialize();
 	}
 	
@@ -93,13 +94,13 @@ public class IntGraphics implements Runnable{
 				String str = Integer.toString(id);
 				textMyID.setText(str);
 				
-				int idAnt = server.newNode.getIdAnt();
-				int idSuc = server.newNode.getIdSuc();
-				InetAddress ip = server.newNode.getIp();
-				InetAddress ipAnt = server.newNode.getIpAnt();
-				InetAddress ipSuc = server.newNode.getIpSuc();
+				int idAnt = newNode.getIdAnt();
+				int idSuc = newNode.getIdSuc();
+				InetAddress ip = newNode.getIp();
+				InetAddress ipAnt = newNode.getIpAnt();
+				InetAddress ipSuc = newNode.getIpSuc();
 				
-				server.setNode(id, idAnt, idSuc, ip, ipAnt, ipSuc);
+				//server.setNode(id, idAnt, idSuc, ip, ipAnt, ipSuc);
             }
 		});
 	}
@@ -113,7 +114,7 @@ public class IntGraphics implements Runnable{
 					int id;
 					Random random  = new Random(System.currentTimeMillis());
 					id = random.nextInt((int) Math.pow(2, 32) - 1);
-					
+					/*
 	            	InetAddress IP;
 					Enumeration e1;
 					e1 = NetworkInterface.getNetworkInterfaces();
@@ -123,25 +124,32 @@ public class IntGraphics implements Runnable{
 					e2.nextElement();
 					
 					IP = (InetAddress) e2.nextElement();
-					
-					server.setNode(id, id, id, IP, IP, IP);
+					*/
+					InetAddress IP = InetAddress.getLocalHost();
+					//server.setNode(id, id, id, IP, IP, IP);
+					newNode.setId(id);
+					newNode.setIdAnt(id);
+					newNode.setIdSuc(id);
+					newNode.setIp(IP);
+					newNode.setIpAnt(IP);
+					newNode.setIpSuc(IP);
 					
 					btnCreatenode.setEnabled(false);
-					String str = Integer.toString(server.newNode.getId());
+					String str = Integer.toString(newNode.getId());
 					textMyID.setText(str);
-					textMyIP.setText(server.newNode.getIp().getHostName());
+					textMyIP.setText(newNode.getIp().getHostAddress());
 					
-					String str2 = Integer.toString(server.newNode.getIdAnt());
+					String str2 = Integer.toString(newNode.getIdAnt());
 					textIdAnt.setText(str2);
-					textIpAnt.setText(server.newNode.getIpAnt().getHostName());
+					textIpAnt.setText(newNode.getIpAnt().getHostAddress());
 					
-					String str3 = Integer.toString(server.newNode.getIdSuc());
+					String str3 = Integer.toString(newNode.getIdSuc());
 					textIdSuc.setText(str3);
-					textIpSuc.setText(server.newNode.getIpSuc().getHostName());
+					textIpSuc.setText(newNode.getIpSuc().getHostAddress());
 					
-				} catch (SocketException e3) {
+				} catch (UnknownHostException e1) {
 					// TODO Auto-generated catch block
-					e3.printStackTrace();
+					e1.printStackTrace();
 				}
             }
         }); 
@@ -152,8 +160,8 @@ public class IntGraphics implements Runnable{
            public void actionPerformed(ActionEvent e)
            {
         	   try {
-        		   int id = server.newNode.getId();
-            	   InetAddress ip = server.newNode.getIpSuc();
+        		   int id = newNode.getId();
+            	   InetAddress ip = newNode.getIpSuc();
             	   System.out.print("btnJoinClick: ");
             	   System.out.print(id + " ");
             	   System.out.println(ip.getHostAddress().toString());
@@ -173,7 +181,7 @@ public class IntGraphics implements Runnable{
         		   int id;
         		   Random random  = new Random(System.currentTimeMillis());
         		   id = random.nextInt((int) Math.pow(2, 32) - 1);
-					
+        		   /*
         		   InetAddress IP;
         		   Enumeration e1;
         		   e1 = NetworkInterface.getNetworkInterfaces();
@@ -183,9 +191,15 @@ public class IntGraphics implements Runnable{
         		   e2.nextElement();
 					
         		   IP = (InetAddress) e2.nextElement();
-					
-        		   server.setNode(id, id, id, IP, IP, IP);
-					
+				   */
+        		   InetAddress IP = InetAddress.getLocalHost();
+        		   //server.setNode(id, id, id, IP, IP, IP);
+        		   newNode.setId(id);
+        		   newNode.setIdAnt(id);
+        		   newNode.setIdSuc(id);
+        		   newNode.setIp(IP);
+        		   newNode.setIpAnt(IP);
+        		   newNode.setIpSuc(IP);
         		   
         		   InetAddress ipDestination =  InetAddress.getByName(textIpDestination.getText());
         		   int idSource = id;

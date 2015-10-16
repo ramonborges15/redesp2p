@@ -15,7 +15,9 @@ public class ParticipanteRede {
 	private int idAntecessor;
 	private InetAddress IPAntecessor;
 	
+	public ParticipanteRede() {
 	
+	}
 	
 	public int getId() {
 		return this.id;

@@ -10,9 +10,9 @@ import java.net.SocketException;
 public class View {
 	
 	public static void main(String[] args) throws IOException {
-		Servidor s = new Servidor();
-		Cliente c = new Cliente();
-		IntGraphics g = new IntGraphics(s, c);
+		ParticipanteRede p = new ParticipanteRede();
+		ParticipanteRede aux = new ParticipanteRede();
+		IntGraphics g = new IntGraphics(p);
 		
 		g.frame.setVisible(true);
 		
@@ -27,7 +27,9 @@ public class View {
 	    	System.out.println("thread ");
 	    	DatagramPacket recvPacket = new DatagramPacket(new byte[256] , 256);
 			server.receive(recvPacket);
-	    	new Thread(new Servidor(server,recvPacket)).start();
+			Thread t2 = new Thread(new Servidor(server,recvPacket, p, aux));
+			t2.start();
+	    	System.out.println("Passou a thread");
 	    }
 		
 		/*
