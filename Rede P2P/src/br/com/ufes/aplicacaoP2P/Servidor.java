@@ -120,8 +120,10 @@ public class Servidor implements Runnable{
 		id[2] =	(byte) bin.read();
 		id[3] =	(byte) bin.read();
 		//Atualiza o antecessor.
+		
+		System.out.println("=> " + recvPacket.getAddress());
 		newNodeServer.setIdAnt(bytesToInt(id));
-		newNodeServer.setIpAnt(recvPacket.getAddress());
+		//newNodeServer.setIpAnt();
 		
 		//Montando pacote
 		ByteBuffer sendData = ByteBuffer.allocate(18); //Aloca um espaço de 18 bytes
@@ -133,6 +135,7 @@ public class Servidor implements Runnable{
 		sendData.put(intToBytes(newNodeServer.getIdAnt()));
 		sendData.put(newNodeServer.getIpAnt().getAddress());
 		//Cria um pacote onde as informações são anexadas.
+		System.out.println("Endereco: " );
 		DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , recvPacket.getAddress(), 12345);
 		//Envia o pacote
 		cservSocket.send(sendPacket);
@@ -141,7 +144,7 @@ public class Servidor implements Runnable{
 	private void joinServerAnswer(ByteArrayInputStream bin) throws IOException {
 		
 		//Desmontando o pacote
-		byte sucess = (byte) bin.read();
+		//byte sucess = (byte) bin.read();
 		//Identificador do Sucessor
 		byte[] idSuc = new byte[4];
 		idSuc[0] =	(byte) bin.read();
@@ -196,6 +199,7 @@ public class Servidor implements Runnable{
 		recvDataidWanted[2] =	(byte) bin.read();
 		recvDataidWanted[3] =	(byte) bin.read();
 		
+		System.out.println("look answer");
 		int id = bytesToInt(recvDataid);
 		//int ip = client.bytesToInt(recvDataip);
 		int idWanted = bytesToInt(recvDataidWanted);
@@ -248,7 +252,7 @@ public class Servidor implements Runnable{
 			//aux.setIpAnt(newNodeServer.getIp());
 			//Montando pacote
 			ByteBuffer sendData = ByteBuffer.allocate(13); //Aloca um espaço de 13 bytes
-			byte codeMessage[] = {(byte)(5)};
+			byte codeMessage[] = {(byte)(130)};
 			sendData.put(codeMessage);					//Codigo da mensagem  Lookup
 			sendData.put(intToBytes(idWanted));
 			sendData.put(intToBytes(newNodeServer.getId()));
@@ -324,9 +328,11 @@ public class Servidor implements Runnable{
 		recvDataipSuc[2] =	(byte) bin.read();
 		recvDataipSuc[3] =	(byte) bin.read();
 		
+		System.out.println("look server Answer");
 		newNodeServer.setIdSuc(bytesToInt(recvDataidSuc));
 		newNodeServer.setIpSuc(InetAddress.getByAddress(recvDataipSuc));
 		
+		System.out.println();
 		/*
 		//Atualiza ip e id do sucessor
 		newNodeServer.setId(bytesToInt(recvDataid));

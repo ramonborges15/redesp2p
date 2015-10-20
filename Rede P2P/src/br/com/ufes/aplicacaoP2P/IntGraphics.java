@@ -183,7 +183,7 @@ public class IntGraphics implements Runnable{
             	   InetAddress ip = newNode.getIpSuc();
             	   System.out.print("btnJoinClick: ");
             	   System.out.print(id + " ");
-            	   System.out.println(ip.getHostAddress().toString());
+            	   System.out.println(ip + " <<");
         		   c.join(id, ip);
         		          		   
 			} catch (IOException e1) {

@@ -48,7 +48,7 @@ public class Cliente {
 		System.out.println("Foi no Join do cliente");
 		//Envia o pacote
 		clientSocket.send(sendPacket);
-		//clientSocket.close();
+		clientSocket.close();
 	}
 	
 	public void leave(int idNodeLeaving, int idAnt, int idSuc, InetAddress ipAnt, InetAddress ipSuc) throws IOException {
@@ -98,7 +98,7 @@ public class Cliente {
 		System.out.println(sendPort);
 		System.out.println("lookup do cliente");
 		
-		//clientSocket.close();
+		clientSocket.close();
 	}
 	
 	public void update(int idSource, int idNewSuc, InetAddress ipNewSuc, InetAddress ipNodeAnt) throws IOException {
