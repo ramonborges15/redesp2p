@@ -133,7 +133,7 @@ public class Servidor implements Runnable{
 		sendData.put(intToBytes(newNodeServer.getIdAnt()));
 		sendData.put(newNodeServer.getIpAnt().getAddress());
 		//Cria um pacote onde as informações são anexadas.
-		DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , newNodeServer.getIpSuc(), 12345);
+		DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , recvPacket.getAddress(), 12345);
 		//Envia o pacote
 		cservSocket.send(sendPacket);
 	}
@@ -171,7 +171,8 @@ public class Servidor implements Runnable{
 		newNodeServer.setIpAnt(InetAddress.getByAddress(ipAnt));
 		newNodeServer.setIdSuc(bytesToInt(idSuc));
 		newNodeServer.setIpSuc(InetAddress.getByAddress(ipSuc));
-		
+		System.out.println("id suc: " + newNodeServer.getIdSuc());
+		System.out.println("ip suc: " + newNodeServer.getIpSuc().getHostAddress());
 		c.update(newNodeServer.getId(), newNodeServer.getId(), newNodeServer.getIp(), newNodeServer.getIpAnt());
 		
 	}
