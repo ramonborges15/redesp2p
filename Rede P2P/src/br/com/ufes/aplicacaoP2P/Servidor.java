@@ -428,11 +428,11 @@ public class Servidor implements Runnable{
 		}
 	}
 	
-	public void leaveServerAnswer(ByteArrayInputStream bin) {
+	public void leaveServerAnswer(ByteArrayInputStream bin) throws UnknownHostException {
 		newNodeServer.setIdAnt(0);
-		newNodeServer.setIpAnt(null);
+		newNodeServer.setIpAnt(InetAddress.getByName("0.0.0.0"));
 		newNodeServer.setIdSuc(0);
-		newNodeServer.setIpSuc(null);
+		newNodeServer.setIpSuc(InetAddress.getByName("0.0.0.0"));
 	}
 	public int generateID() {
 		int value;
