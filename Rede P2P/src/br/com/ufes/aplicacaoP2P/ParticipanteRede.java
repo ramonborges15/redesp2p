@@ -4,6 +4,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.Random;
 
@@ -15,8 +16,13 @@ public class ParticipanteRede {
 	private int idAntecessor;
 	private InetAddress IPAntecessor;
 	
-	public ParticipanteRede() {
-	
+	public ParticipanteRede() throws UnknownHostException {
+		this.id = 0;
+		this.idAntecessor = 0;
+		this.idSuccessor = 0;
+		this.IP = InetAddress.getByName("0.0.0.0");
+		this.IPAntecessor = InetAddress.getByName("0.0.0.0");
+		this.IPSuccessor = InetAddress.getByName("0.0.0.0");
 	}
 	
 	public int getId() {

@@ -16,22 +16,21 @@ public class Servidor implements Runnable{
 	DatagramSocket cservSocket;
 	DatagramPacket recvPacket;
 	//DatagramSocket server;
-	ParticipanteRede newNode, aux;
-	
-	public Servidor() {
-		
-	}
+	ParticipanteRede newNodeServer, aux;
+	Cliente c;
+	IntGraphics g;
 	/*
 	public Servidor(DatagramSocket csocket) {
 	    this.cservSocket = csocket;
 	}
 	*/
 	
-	public Servidor(DatagramSocket server, DatagramPacket pkt, ParticipanteRede newNode, ParticipanteRede aux) {
+	public Servidor(DatagramSocket server, DatagramPacket pkt, ParticipanteRede newNodeServer, ParticipanteRede aux) {
 	    this.cservSocket = server;
 	    this.recvPacket = pkt;
-	    this.newNode = newNode;
+	    this.newNodeServer = newNodeServer;
 		this.aux = aux;
+		this.c = new Cliente();
 	}
 	/*
 	public static void main(String args[]) throws Exception {
@@ -72,23 +71,26 @@ public class Servidor implements Runnable{
 						joinAnswer(bin);
 						break;
 					case  1: 
+						leaveAnswer(bin);
 						break;
 					case  2: 
-						System.out.println("LookupAnswer");
-						lookupAnswer(bin, recvPacket);
+						lookupAnswer(bin);
 						break;
-					case  3: 
+					case  3:
+						updateAnswer(bin);
 						break;
 					case 128: 
 						joinServerAnswer(bin);
 						break;
 					case 129: 
+						leaveServerAnswer(bin);
 						break;
 					case 130: 
-						lookupServerAnswer(bin, newNode);
+						lookupServerAnswer(bin);
 						break;
-					case 131: 
-								break;
+					case 131:
+						updateAnswerServer(bin);
+						break;
 					default:
 				}
 			} catch (IOException e) {
@@ -98,17 +100,17 @@ public class Servidor implements Runnable{
 	}
 	
 	public ParticipanteRede getNode() {
-		return newNode;
+		return newNodeServer;
 	}
 	
 	public void setNode(int id, int idAnt, int idSuc, InetAddress ip, InetAddress ipAnt, InetAddress ipSuc) {
-		newNode.setId(idSuc);
-		newNode.setIdAnt(idAnt);
-		newNode.setIdSuc(idSuc);
+		newNodeServer.setId(idSuc);
+		newNodeServer.setIdAnt(idAnt);
+		newNodeServer.setIdSuc(idSuc);
 		
-		newNode.setIp(ip);
-		newNode.setIpAnt(ipAnt);
-		newNode.setIpSuc(ipSuc);
+		newNodeServer.setIp(ip);
+		newNodeServer.setIpAnt(ipAnt);
+		newNodeServer.setIpSuc(ipSuc);
 	}
 
 	private void joinAnswer(ByteArrayInputStream bin) throws IOException {
@@ -117,51 +119,64 @@ public class Servidor implements Runnable{
 		id[1] =	(byte) bin.read();
 		id[2] =	(byte) bin.read();
 		id[3] =	(byte) bin.read();
+		//Atualiza o antecessor.
+		newNodeServer.setIdAnt(bytesToInt(id));
+		newNodeServer.setIpAnt(recvPacket.getAddress());
 		
 		//Montando pacote
-		ByteBuffer sendData = ByteBuffer.allocate(18); //Aloca um espaço de 13 bytes
+		ByteBuffer sendData = ByteBuffer.allocate(18); //Aloca um espaço de 18 bytes
 		byte codeMessage[] = {(byte)(128)};
-		sendData.put(codeMessage);					//Codigo da mensagem de Lookup
+		sendData.put(codeMessage);					//Codigo da mensagem de Join
 		sendData.put((byte)1);
-		sendData.put(intToBytes(newNode.getIdSuc()));
-		sendData.put(newNode.getIpSuc().getAddress());
-		sendData.put(intToBytes(newNode.getIdAnt()));
-		sendData.put(newNode.getIpAnt().getAddress());
+		sendData.put(intToBytes(newNodeServer.getId()));
+		sendData.put(newNodeServer.getIp().getAddress());
+		sendData.put(intToBytes(newNodeServer.getIdAnt()));
+		sendData.put(newNodeServer.getIpAnt().getAddress());
 		//Cria um pacote onde as informações são anexadas.
-		DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , newNode.getIpSuc(), 12345);
+		DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , newNodeServer.getIpSuc(), 12345);
 		//Envia o pacote
 		cservSocket.send(sendPacket);
 	}
 	
-	private void joinServerAnswer(ByteArrayInputStream bin) throws UnknownHostException {
+	private void joinServerAnswer(ByteArrayInputStream bin) throws IOException {
 		
 		//Desmontando o pacote
-		byte[] idSource = new byte[4];
-		idSource[0] =	(byte) bin.read();
-		idSource[1] =	(byte) bin.read();
-		idSource[2] =	(byte) bin.read();
-		idSource[3] =	(byte) bin.read();
+		byte sucess = (byte) bin.read();
+		//Identificador do Sucessor
 		byte[] idSuc = new byte[4];
-		idSuc[0] = (byte) bin.read();
-		idSuc[1] = (byte) bin.read();
-		idSuc[2] = (byte) bin.read();
-		idSuc[3] = (byte) bin.read();
+		idSuc[0] =	(byte) bin.read();
+		idSuc[1] =	(byte) bin.read();
+		idSuc[2] =	(byte) bin.read();
+		idSuc[3] =	(byte) bin.read();
+		//Ip do Sucessor
 		byte[] ipSuc = new byte[4];
-		ipSuc[0] =	(byte) bin.read();
-		ipSuc[1] =	(byte) bin.read();
-		ipSuc[2] =	(byte) bin.read();
-		ipSuc[3] =	(byte) bin.read();
+		ipSuc[0] = (byte) bin.read();
+		ipSuc[1] = (byte) bin.read();
+		ipSuc[2] = (byte) bin.read();
+		ipSuc[3] = (byte) bin.read();
+		//Identificador do Antecessor
+		byte[] idAnt = new byte[4];
+		idAnt[0] =	(byte) bin.read();
+		idAnt[1] =	(byte) bin.read();
+		idAnt[2] =	(byte) bin.read();
+		idAnt[3] =	(byte) bin.read();
+		//Ip do Antecessor
+		byte[] ipAnt = new byte[4];
+		ipAnt[0] = (byte) bin.read();
+		ipAnt[1] = (byte) bin.read();
+		ipAnt[2] = (byte) bin.read();
+		ipAnt[3] = (byte) bin.read();
 		
-		newNode.setIdAnt(bytesToInt(idSuc)); //
-		//newNode.setIdSuc(idSuccessor);
-		newNode.setIpAnt(InetAddress.getByAddress(ipSuc));  //
-		//newNode.setIpSuc(IPSuccessor);
-		//g.updatingInterface(newNode);
-		//update();
-		System.out.println("joinServerAnswer");
+		newNodeServer.setIdAnt(bytesToInt(idAnt));
+		newNodeServer.setIpAnt(InetAddress.getByAddress(ipAnt));
+		newNodeServer.setIdSuc(bytesToInt(idSuc));
+		newNodeServer.setIpSuc(InetAddress.getByAddress(ipSuc));
+		
+		c.update(newNodeServer.getId(), newNodeServer.getId(), newNodeServer.getIp(), newNodeServer.getIpAnt());
+		
 	}
 
-	public void lookupAnswer(ByteArrayInputStream bin, DatagramPacket pckt) throws IOException {
+	public void lookupAnswer(ByteArrayInputStream bin) throws IOException {
 		System.out.println("EU");
 		//Desmontando o pacote
 		byte[] recvDataid = new byte[4];
@@ -186,80 +201,87 @@ public class Servidor implements Runnable{
 		System.out.println(InetAddress.getByAddress(recvDataip) + " " +idWanted);
 		//Esta entre o antecessor e o id de origem
 		System.out.println("------------------------------------------------------------");
-		System.out.println(newNode.getId());
-		System.out.println(newNode.getIp().getHostAddress());
-		System.out.println(newNode.getIdAnt());
-		if(idWanted <= newNode.getId() && idWanted >= newNode.getIdAnt()) {
+		System.out.println(newNodeServer.getId());
+		System.out.println(newNodeServer.getIp().getHostAddress());
+		System.out.println(newNodeServer.getIdAnt());
+		if(idWanted <= newNodeServer.getId() && idWanted >= newNodeServer.getIdAnt()) {
 			//Guarda a informação anterior para ser mandada a funcao de resposta Join.
 			System.out.println("Passou da primeira condicao");
-			aux.setIdAnt(newNode.getIdAnt());
-			aux.setIpAnt(newNode.getIpAnt());
+			//aux.setIdAnt(newNodeServer.getIdAnt());
+			//aux.setIpAnt(newNodeServer.getIpAnt());
 			//Montando pacote
 			ByteBuffer sendData = ByteBuffer.allocate(13); //Aloca um espaço de 13 bytes
 			byte codeMessage[] = {(byte)(130)};
 			sendData.put(codeMessage);					//Codigo da mensagem de Lookup
 			sendData.put(intToBytes(idWanted));
-			sendData.put(intToBytes(newNode.getId()));
-			sendData.put(newNode.getIp().getAddress());
-			//Cria um pacote onde as informações são anexadas.
-			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(recvDataip), pckt.getPort());
-			//Envia o pacote
-			cservSocket.send(sendPacket);
-		}
-		//Esta entre o id de origem e o sucessor
-		else if(idWanted > newNode.getId() && idWanted <= newNode.getIdSuc()) {
-			System.out.println("Passou da segunda condicao");
-			//Guarda a informação anterior para ser mandada a funcao de resposta Join.
-			aux.setIdAnt(newNode.getId());
-			aux.setIpAnt(newNode.getIp());
-			//Montando pacote
-			ByteBuffer sendData = ByteBuffer.allocate(13); //Aloca um espaço de 13 bytes
-			byte codeMessage[] = {(byte)(130)};
-			sendData.put(codeMessage);					//Codigo da mensagem de Lookup
-			sendData.put(intToBytes(idWanted));
-			sendData.put(intToBytes(newNode.getIdSuc()));
-			sendData.put(newNode.getIpSuc().getAddress());
-			//Cria um pacote onde as informações são anexadas.
-			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(recvDataip), pckt.getPort());
-			//Envia o pacote
-			cservSocket.send(sendPacket);
-		}
-		//Temos apenas um nó
-		else if(newNode.getId() == newNode.getIdSuc() && newNode.getId() == newNode.getIdAnt()) {
-			System.out.println("Passou da terceira condicao");
-			//Guarda a informação anterior para ser mandada a funcao de resposta Join.
-			aux.setIdAnt(newNode.getId());
-			aux.setIpAnt(newNode.getIp());
-			//Montando pacote
-			ByteBuffer sendData = ByteBuffer.allocate(13); //Aloca um espaço de 13 bytes
-			byte codeMessage[] = {(byte)(5)};
-			sendData.put(codeMessage);					//Codigo da mensagem  Lookup
-			sendData.put(intToBytes(idWanted));
-			sendData.put(intToBytes(newNode.getId()));
-			sendData.put(newNode.getIp().getAddress());
+			sendData.put(intToBytes(newNodeServer.getId()));
+			sendData.put(newNodeServer.getIp().getAddress());
 			//Cria um pacote onde as informações são anexadas.
 			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(recvDataip), 12345);
 			//Envia o pacote
 			cservSocket.send(sendPacket);
 		}
+		//Esta entre o id de origem e o sucessor
+		else if(idWanted > newNodeServer.getId() && idWanted <= newNodeServer.getIdSuc()) {
+			System.out.println("Passou da segunda condicao");
+			//Guarda a informação anterior para ser mandada a funcao de resposta Join.
+			//aux.setIdAnt(newNodeServer.getId());
+			//aux.setIpAnt(newNodeServer.getIp());
+			//Montando pacote
+			ByteBuffer sendData = ByteBuffer.allocate(13); //Aloca um espaço de 13 bytes
+			byte codeMessage[] = {(byte)(130)};
+			sendData.put(codeMessage);					//Codigo da mensagem de Lookup
+			sendData.put(intToBytes(idWanted));
+			sendData.put(intToBytes(newNodeServer.getIdSuc()));
+			sendData.put(newNodeServer.getIpSuc().getAddress());
+			//Cria um pacote onde as informações são anexadas.
+			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(recvDataip), 12345);
+			//Envia o pacote
+			cservSocket.send(sendPacket);
+		}
+		//Temos apenas um nó
+		else if(newNodeServer.getId() == newNodeServer.getIdSuc() && newNodeServer.getId() == newNodeServer.getIdAnt()) {
+			System.out.println("Passou da terceira condicao");
+			//Guarda a informação anterior para ser mandada a funcao de resposta Join.
+			//aux.setIdAnt(newNodeServer.getId());
+			//aux.setIpAnt(newNodeServer.getIp());
+			//Montando pacote
+			ByteBuffer sendData = ByteBuffer.allocate(13); //Aloca um espaço de 13 bytes
+			byte codeMessage[] = {(byte)(5)};
+			sendData.put(codeMessage);					//Codigo da mensagem  Lookup
+			sendData.put(intToBytes(idWanted));
+			sendData.put(intToBytes(newNodeServer.getId()));
+			sendData.put(newNodeServer.getIp().getAddress());
+			//Cria um pacote onde as informações são anexadas.
+			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(recvDataip), 12345);
+			//Envia o pacote
+			cservSocket.send(sendPacket);
+			/*
+			//Seta as informacoes sucessor e antecessor do no criado, que neste caso são iguais. 
+			newNode.setIdAnt(idWanted);
+			newNode.setIpAnt(InetAddress.getByAddress(recvDataip));
+			newNode.setIdSuc(idWanted);
+			newNode.setIpSuc(InetAddress.getByAddress(recvDataip));
+			*/
+		}
 		
 		//No de origem é o menor da rede.
 		//Ex: rede com 3 nos -- noAntecessorId=27   noOrigemId=8  noSucessorId=14       novoNoId=41
-		else if(idWanted < newNode.getId() && newNode.getId() < newNode.getIdAnt() && newNode.getId() < newNode.getIdSuc()) {
+		else if(idWanted < newNodeServer.getId() && newNodeServer.getId() < newNodeServer.getIdAnt() && newNodeServer.getId() < newNodeServer.getIdSuc()) {
 			System.out.println("Passou da quarta condicao");
 			//Guarda a informação anterior para ser mandada a funcao de resposta Join.
-			aux.setIdAnt(newNode.getIdSuc());
-			aux.setIpAnt(newNode.getIpSuc());
+			//aux.setIdAnt(newNodeServer.getIdSuc());
+			//aux.setIpAnt(newNodeServer.getIpSuc());
 			
 			//Montando pacote
 			ByteBuffer sendData = ByteBuffer.allocate(13); //Aloca um espaço de 13 bytes
 			byte codeMessage[] = {(byte)(130)};
 			sendData.put(codeMessage);					//Codigo da mensagem de Lookup
 			sendData.put(intToBytes(idWanted));
-			sendData.put(intToBytes(newNode.getId()));
-			sendData.put(newNode.getIp().getAddress());
+			sendData.put(intToBytes(newNodeServer.getId()));
+			sendData.put(newNodeServer.getIp().getAddress());
 			//Cria um pacote onde as informações são anexadas.
-			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(recvDataip), pckt.getPort());
+			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(recvDataip), 12345);
 			//Envia o pacote
 			cservSocket.send(sendPacket);
 		}
@@ -275,14 +297,13 @@ public class Servidor implements Runnable{
 			sendData.put(intToBytes(idWanted));
 			//Cria um pacote onde as informações são anexadas.
 			//Envia o pacote
-			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(newNode.getIpSuc().getAddress()), 12345);
+			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(newNodeServer.getIpSuc().getAddress()), 12345);
 			cservSocket.send(sendPacket);
 		}
 	}
 	
-	public void lookupServerAnswer(ByteArrayInputStream bin, ParticipanteRede p) throws UnknownHostException {
+	public void lookupServerAnswer(ByteArrayInputStream bin) throws UnknownHostException {
 		
-		//g.textShow.setText("ID sucessor: " + newNode.getIdSuc() + " IP sucessor: " + newNode.getIpSuc().getHostAddress());
 		//Desmontando o pacote
 		byte[] recvDataid = new byte[4];
 		recvDataid[0] =	(byte) bin.read();
@@ -302,15 +323,117 @@ public class Servidor implements Runnable{
 		recvDataipSuc[2] =	(byte) bin.read();
 		recvDataipSuc[3] =	(byte) bin.read();
 		
+		newNodeServer.setIdSuc(bytesToInt(recvDataidSuc));
+		newNodeServer.setIpSuc(InetAddress.getByAddress(recvDataipSuc));
+		
+		/*
 		//Atualiza ip e id do sucessor
-		newNode.setId(bytesToInt(recvDataid));
-		newNode.setIdSuc(bytesToInt(recvDataidSuc));
-		newNode.setIpSuc(InetAddress.getByAddress(recvDataipSuc));
-		newNode.setIdAnt(aux.getIdAnt());
-		newNode.setIpAnt(aux.getIpAnt());
+		newNodeServer.setId(bytesToInt(recvDataid));
+		newNodeServer.setIdAnt(aux.getIdAnt());
+		newNodeServer.setIpAnt(aux.getIpAnt());
+		*/
 	}
 	
+	public void updateAnswer(ByteArrayInputStream bin) throws IOException {
+		byte sucess = (byte) bin.read();
+		byte[] idSource = new byte[4];
+		idSource[0] = (byte) bin.read();
+		idSource[1] = (byte) bin.read();
+		idSource[2] = (byte) bin.read();
+		idSource[3] = (byte) bin.read();
 	
+		byte[] idSuc = new byte[4];
+		idSuc[0] = (byte) bin.read();
+		idSuc[1] = (byte) bin.read();
+		idSuc[2] = (byte) bin.read();
+		idSuc[3] = (byte) bin.read();
+		
+		byte[] ipSuc = new byte[4];
+		ipSuc[0] = (byte) bin.read();
+		ipSuc[1] = (byte) bin.read();
+		ipSuc[2] = (byte) bin.read();
+		ipSuc[3] = (byte) bin.read();
+		
+		newNodeServer.setIdSuc(bytesToInt(idSuc));
+		newNodeServer.setIpSuc(InetAddress.getByAddress(ipSuc));
+		
+		// Montando pacote
+		ByteBuffer sendData = ByteBuffer.allocate(6);
+		byte codeMessage[] = { (byte) (131) };
+		sendData.put(codeMessage); // Codigo da mensagem de update
+		sendData.put((byte) 1);
+		sendData.put(idSuc);
+		// Cria um pacote onde as informações são anexadas.
+		DatagramPacket sendPacket = new DatagramPacket(sendData.array(), sendData.capacity(), newNodeServer.getIpSuc(), 12345);
+		// Envia o pacote
+		cservSocket.send(sendPacket);
+	}
+	
+	public void updateAnswerServer(ByteArrayInputStream bin) {
+		//OK
+	}
+	
+	public void leaveAnswer(ByteArrayInputStream bin) throws IOException {
+		//Mensagem enviada para o sucessor e antecessor.
+		// codigo/id do no saindo da rede/id e ip do suc saindo da rede/id e ip do ant saindo da rede.
+		byte[] idNodeLeaving = new byte[4];
+		idNodeLeaving[0] = (byte) bin.read();
+		idNodeLeaving[1] = (byte) bin.read();
+		idNodeLeaving[2] = (byte) bin.read();
+		idNodeLeaving[3] = (byte) bin.read();
+		
+		byte[] idSuc = new byte[4];
+		idSuc[0] = (byte) bin.read();
+		idSuc[1] = (byte) bin.read();
+		idSuc[2] = (byte) bin.read();
+		idSuc[3] = (byte) bin.read();
+				
+		byte[] ipSuc = new byte[4];
+		ipSuc[0] = (byte) bin.read();
+		ipSuc[1] = (byte) bin.read();
+		ipSuc[2] = (byte) bin.read();
+		ipSuc[3] = (byte) bin.read();
+		
+		byte[] idAnt = new byte[4];
+		idAnt[0] = (byte) bin.read();
+		idAnt[1] = (byte) bin.read();
+		idAnt[2] = (byte) bin.read();
+		idAnt[3] = (byte) bin.read();
+
+		byte[] ipAnt = new byte[4];
+		ipAnt[0] = (byte) bin.read();
+		ipAnt[1] = (byte) bin.read();
+		ipAnt[2] = (byte) bin.read();
+		ipAnt[3] = (byte) bin.read();
+		
+		// Montando pacote
+		ByteBuffer sendData = ByteBuffer.allocate(5);
+		byte codeMessage[] = { (byte) (129)};
+		sendData.put(codeMessage);
+		sendData.put(idNodeLeaving);
+		// Cria um pacote onde as informações são anexadas.
+		DatagramPacket sendPacket = new DatagramPacket(sendData.array(), sendData.capacity(), recvPacket.getAddress(), 12345);
+		// Envia o pacote
+		cservSocket.send(sendPacket);
+		
+		//Sucessor
+		if(bytesToInt(idNodeLeaving) < newNodeServer.getId()) {
+			newNodeServer.setIdAnt(bytesToInt(idAnt));
+			newNodeServer.setIpAnt(InetAddress.getByAddress(ipAnt));
+		}
+		//Antecessor
+		else if(bytesToInt(idNodeLeaving) > newNodeServer.getId()) {
+			newNodeServer.setIdSuc(bytesToInt(idSuc));
+			newNodeServer.setIpSuc(InetAddress.getByAddress(ipSuc));
+		}
+	}
+	
+	public void leaveServerAnswer(ByteArrayInputStream bin) {
+		newNodeServer.setIdAnt(0);
+		newNodeServer.setIpAnt(null);
+		newNodeServer.setIdSuc(0);
+		newNodeServer.setIpSuc(null);
+	}
 	public int generateID() {
 		int value;
 		Random random  = new Random(System.currentTimeMillis());

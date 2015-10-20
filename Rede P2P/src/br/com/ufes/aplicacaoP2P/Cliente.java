@@ -51,7 +51,7 @@ public class Cliente {
 		//clientSocket.close();
 	}
 	
-	public void leave(int idNodeLeaving, ParticipanteRede nodeAnt, ParticipanteRede nodeSuc) throws IOException {
+	public void leave(int idNodeLeaving, int idAnt, int idSuc, InetAddress ipAnt, InetAddress ipSuc) throws IOException {
 		//Cria o socket do lado cliente.
 		DatagramSocket clientSocker = new DatagramSocket();
 		
@@ -60,16 +60,16 @@ public class Cliente {
 		byte codeMessage[] = {1};  //Codigo da Mensagem Leave
 		sendData.put(codeMessage);
 		sendData.put(intToBytes(idNodeLeaving));
-		sendData.put(intToBytes(nodeSuc.getId()));
-		sendData.put(nodeSuc.getIp().getAddress());
-		sendData.put(intToBytes(nodeAnt.getId()));
-		sendData.put(nodeAnt.getIp().getAddress()); 
+		sendData.put(intToBytes(idSuc));
+		sendData.put(ipSuc.getAddress());
+		sendData.put(intToBytes(idAnt));
+		sendData.put(ipAnt.getAddress()); 
 		
 		// Enviar pacote para Antecessor
-		DatagramPacket sendPacketfst = new DatagramPacket(sendData.array() , sendData.capacity() , nodeAnt.getIp(), sendPort);		
+		DatagramPacket sendPacketfst = new DatagramPacket(sendData.array() , sendData.capacity() , ipAnt, sendPort);		
 		clientSocker.send(sendPacketfst);
 		// Enviar pacote para Sucessor
-		DatagramPacket sendPacketsnd = new DatagramPacket(sendData.array() , sendData.capacity() , nodeAnt.getIp(), sendPort);		
+		DatagramPacket sendPacketsnd = new DatagramPacket(sendData.array() , sendData.capacity() , ipSuc, sendPort);		
 		clientSocker.send(sendPacketsnd);
 				
 		clientSocker.close();
