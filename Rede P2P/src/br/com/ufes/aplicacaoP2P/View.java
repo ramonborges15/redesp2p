@@ -12,7 +12,7 @@ public class View {
 	public static void main(String[] args) throws IOException {
 		ParticipanteRede p = new ParticipanteRede();
 		ParticipanteRede aux = new ParticipanteRede();
-		IntGraphics g = new IntGraphics(p);
+		IntGraphics g = new IntGraphics(p, aux);
 		
 		g.frame.setVisible(true);
 		

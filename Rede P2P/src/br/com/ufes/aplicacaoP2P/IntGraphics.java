@@ -52,7 +52,7 @@ public class IntGraphics implements Runnable{
 	public JTextField textIdSuc;
 	public JTextField textIpDestination;
 	
-	ParticipanteRede newNode;
+	ParticipanteRede newNode, aux;
 	Cliente c;
 	/*
 	public static void main(String[] args) throws SocketException {
@@ -69,9 +69,10 @@ public class IntGraphics implements Runnable{
 		//new Thread(window).start();
 	}
 	*/
-	public IntGraphics(ParticipanteRede newNode) {
+	public IntGraphics(ParticipanteRede newNode, ParticipanteRede aux) {
 		this.c = new Cliente();
 		this.newNode = newNode;
+		this.aux = aux;
 		initialize();
 	}
 	
@@ -180,7 +181,7 @@ public class IntGraphics implements Runnable{
         	   try {
         		   
         		   int id = newNode.getId();
-            	   InetAddress ip = newNode.getIpSuc();
+            	   InetAddress ip = aux.getIpSuc();
             	   System.out.print("btnJoinClick: ");
             	   System.out.print(id + " ");
             	   System.out.println(ip + " <<");
