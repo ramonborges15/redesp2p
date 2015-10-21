@@ -121,7 +121,6 @@ public class Servidor implements Runnable{
 		id[2] =	(byte) bin.read();
 		id[3] =	(byte) bin.read();
 		
-		System.out.println("Endereco: " + newNodeServer.getIpAnt());
 		//Montando pacote
 		ByteBuffer sendData = ByteBuffer.allocate(18); //Aloca um espaÃ§o de 18 bytes
 		byte codeMessage[] = {(byte)(128)};
@@ -136,9 +135,16 @@ public class Servidor implements Runnable{
 		//Envia o pacote
 		cservSocket.send(sendPacket);
 		
+		System.out.println("idAnt: " + bytesToInt(id));
+		System.out.println("ipAnt: " + aux.getIp());
+		System.out.println("idsuc " + newNodeServer.getIdSuc());
+		System.out.println("ipSuc " + newNodeServer.getIpSuc().getHostAddress());
+		System.out.println("id " + newNodeServer.getId());
+		System.out.println("ip " + newNodeServer.getIp().getHostAddress());
 		//Atualiza o antecessor.
 		newNodeServer.setIdAnt(bytesToInt(id));
-		newNodeServer.setIpAnt(aux.getIp()); 
+		newNodeServer.setIpAnt(aux.getIp());
+		
 	}
 	
 	private void joinServerAnswer(ByteArrayInputStream bin) throws IOException {
@@ -169,6 +175,13 @@ public class Servidor implements Runnable{
 		ipAnt[1] = (byte) bin.read();
 		ipAnt[2] = (byte) bin.read();
 		ipAnt[3] = (byte) bin.read();
+		System.out.println("FOi no joinserveranswer");
+		System.out.println("idAnt: " + newNodeServer.getIdAnt());
+		System.out.println("ipAnt: " + newNodeServer.getIpAnt().getHostAddress());
+		System.out.println("idsuc " + newNodeServer.getIdSuc());
+		System.out.println("ipSuc " + newNodeServer.getIpSuc().getHostAddress());
+		System.out.println("id " + newNodeServer.getId());
+		System.out.println("ip " + newNodeServer.getIp().getHostAddress());
 		
 		newNodeServer.setIdSuc(bytesToInt(idSuc));
 		newNodeServer.setIpSuc(InetAddress.getByAddress(ipSuc));
@@ -343,7 +356,7 @@ public class Servidor implements Runnable{
 	}
 	
 	public void updateAnswer(ByteArrayInputStream bin) throws IOException {
-		byte sucess = (byte) bin.read();
+		//byte sucess = (byte) bin.read();
 		byte[] idSource = new byte[4];
 		idSource[0] = (byte) bin.read();
 		idSource[1] = (byte) bin.read();
