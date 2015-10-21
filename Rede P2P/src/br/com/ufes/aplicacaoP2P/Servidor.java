@@ -438,12 +438,12 @@ public class Servidor implements Runnable{
 		cservSocket.send(sendPacket);
 		
 		//Sucessor
-		if(bytesToInt(idNodeLeaving) < newNodeServer.getId()) {
+		if(bytesToInt(idNodeLeaving) == newNodeServer.getIdAnt()) {
 			newNodeServer.setIdAnt(bytesToInt(idAnt));
 			newNodeServer.setIpAnt(InetAddress.getByAddress(ipAnt));
 		}
 		//Antecessor
-		else if(bytesToInt(idNodeLeaving) > newNodeServer.getId()) {
+		else if(bytesToInt(idNodeLeaving) == newNodeServer.getIdSuc()) {
 			newNodeServer.setIdSuc(bytesToInt(idSuc));
 			newNodeServer.setIpSuc(InetAddress.getByAddress(ipSuc));
 		}

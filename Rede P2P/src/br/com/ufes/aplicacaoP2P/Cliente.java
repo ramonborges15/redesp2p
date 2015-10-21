@@ -57,7 +57,7 @@ public class Cliente {
 		
 		//Aloca um espaço de 5 bytes
 		ByteBuffer sendData = ByteBuffer.allocate(21);
-		byte codeMessage[] = {1};  //Codigo da Mensagem Leave
+		byte codeMessage[] = {(byte) 1};  //Codigo da Mensagem Leave
 		sendData.put(codeMessage);
 		sendData.put(intToBytes(idNodeLeaving));
 		sendData.put(intToBytes(idSuc));

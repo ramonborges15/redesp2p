@@ -186,6 +186,7 @@ public class IntGraphics implements Runnable{
             	   System.out.print(id + " ");
             	   System.out.println(ip + " <<");
         		   c.join(id, ip);
+        		   btnLeave.setEnabled(true);
         		          		   
 			} catch (IOException e1) {
 					e1.printStackTrace();
