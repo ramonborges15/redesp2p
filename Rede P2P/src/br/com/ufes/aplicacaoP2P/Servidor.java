@@ -19,11 +19,6 @@ public class Servidor implements Runnable{
 	ParticipanteRede newNodeServer, aux;
 	Cliente c;
 	IntGraphics g;
-	/*
-	public Servidor(DatagramSocket csocket) {
-	    this.cservSocket = csocket;
-	}
-	*/
 	
 	public Servidor(DatagramSocket server, DatagramPacket pkt, ParticipanteRede newNodeServer, ParticipanteRede aux) {
 	    this.cservSocket = server;
@@ -32,33 +27,9 @@ public class Servidor implements Runnable{
 		this.aux = aux;
 		this.c = new Cliente();
 	}
-	/*
-	public static void main(String args[]) throws Exception {
-		System.out.println("Inicia Servidor");
-		DatagramSocket theSocket = new DatagramSocket(12345);
-	    //while(true) {
-	    	new Thread() {
-	    		Servidor s = new Servidor(theSocket);
-	    		public void run() {
-	    			s.run1();
-				}
-			}.start();
-			
-			
-	   //}
-	    
-	    /*while (true) {
-	    	Socket sock = ssock.accept();
-	    	System.out.println("thread ");
-	    	new Thread(new Servidor(sock)).start();
-	    }*/ /*
-	}
-	*/
+	
 	public void run() {
 		int op;
-		//while(true) {
-			//DatagramPacket recvPacket = new DatagramPacket(new byte[256] , 256);
-			//cservSocket.receive(recvPacket);
 		
 			try {
 				ByteArrayInputStream bin = new ByteArrayInputStream(recvPacket.getData());
@@ -97,7 +68,7 @@ public class Servidor implements Runnable{
 			} catch (IOException e) {
 				e.printStackTrace();
 			} 
-		//}
+		
 	}
 	
 	public ParticipanteRede getNode() {
@@ -144,6 +115,13 @@ public class Servidor implements Runnable{
 		//Atualiza o antecessor.
 		newNodeServer.setIdAnt(bytesToInt(id));
 		newNodeServer.setIpAnt(aux.getIp());
+		
+		//Tinhamos um participante na rede e devemos setar tanto o antecessor( foi feito acima) como o sucessor para o mesmo 
+		//participante(ou seja, o novo).
+		if(newNodeServer.getIp() == newNodeServer.getIpSuc()) {
+			newNodeServer.setIdSuc(bytesToInt(id));
+			newNodeServer.setIpSuc(aux.getIp());
+		}
 		
 	}
 	
@@ -259,7 +237,7 @@ public class Servidor implements Runnable{
 			//Envia o pacote
 			cservSocket.send(sendPacket);
 		}
-		//Temos apenas um nÃ³
+		//Temos apenas um nó
 		else if(newNodeServer.getId() == newNodeServer.getIdSuc() && newNodeServer.getId() == newNodeServer.getIdAnt()) {
 			System.out.println("Passou da terceira condicao");
 			//Guarda a informaÃ§Ã£o anterior para ser mandada a funcao de resposta Join.
@@ -277,16 +255,9 @@ public class Servidor implements Runnable{
 			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(recvDataip), 12345);
 			//Envia o pacote
 			cservSocket.send(sendPacket);
-			/*
-			//Seta as informacoes sucessor e antecessor do no criado, que neste caso sÃ£o iguais. 
-			newNode.setIdAnt(idWanted);
-			newNode.setIpAnt(InetAddress.getByAddress(recvDataip));
-			newNode.setIdSuc(idWanted);
-			newNode.setIpSuc(InetAddress.getByAddress(recvDataip));
-			*/
 		}
 		
-		//No de origem Ã© o menor da rede.
+		//No de origem é o menor da rede.
 		//Ex: rede com 3 nos -- noAntecessorId=27   noOrigemId=8  noSucessorId=14       novoNoId=41
 		else if(idWanted < newNodeServer.getId() && newNodeServer.getId() < newNodeServer.getIdAnt() && newNodeServer.getId() < newNodeServer.getIdSuc()) {
 			System.out.println("Passou da quarta condicao");
@@ -304,6 +275,29 @@ public class Servidor implements Runnable{
 			//Cria um pacote onde as informaÃ§Ãµes sÃ£o anexadas.
 			DatagramPacket sendPacket = new DatagramPacket(sendData.array() , sendData.capacity() , InetAddress.getByAddress(recvDataip), 12345);
 			//Envia o pacote
+			cservSocket.send(sendPacket);
+		}
+		
+		// No de origem é o maior da rede.
+		else if (idWanted > newNodeServer.getIdAnt() && newNodeServer.getIdAnt() > newNodeServer.getIdSuc() 
+				&& newNodeServer.getIdSuc() > newNodeServer.getId()) {
+			System.out.println("Passou da quinta condicao");
+			// Guarda a informaÃ§Ã£o anterior para ser mandada a funcao de
+			// resposta Join.
+			aux.setIdAnt(newNodeServer.getIdSuc());
+			aux.setIpAnt(newNodeServer.getIpSuc());
+			aux.setIp(InetAddress.getByAddress(recvDataip));
+			// Montando pacote
+			ByteBuffer sendData = ByteBuffer.allocate(13); // Aloca um espaÃ§o
+															// de 13 bytes
+			byte codeMessage[] = {(byte) (130)};
+			sendData.put(codeMessage); // Codigo da mensagem de Lookup
+			sendData.put(intToBytes(idWanted));
+			sendData.put(intToBytes(newNodeServer.getId()));
+			sendData.put(newNodeServer.getIp().getAddress());
+			// Cria um pacote onde as informaÃ§Ãµes sÃ£o anexadas.
+			DatagramPacket sendPacket = new DatagramPacket(sendData.array(), sendData.capacity(), InetAddress.getByAddress(recvDataip), 12345);
+			// Envia o pacote
 			cservSocket.send(sendPacket);
 		}
 		
@@ -347,12 +341,6 @@ public class Servidor implements Runnable{
 		aux.setIdSuc(bytesToInt(recvDataidSuc));
 		aux.setIpSuc(InetAddress.getByAddress(recvDataipSuc));
 		
-		/*
-		//Atualiza ip e id do sucessor
-		newNodeServer.setId(bytesToInt(recvDataid));
-		newNodeServer.setIdAnt(aux.getIdAnt());
-		newNodeServer.setIpAnt(aux.getIpAnt());
-		*/
 	}
 	
 	public void updateAnswer(ByteArrayInputStream bin) throws IOException {
