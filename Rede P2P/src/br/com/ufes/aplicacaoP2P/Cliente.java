@@ -97,6 +97,7 @@ public class Cliente {
 		System.out.println(ipDestination);
 		System.out.println(sendPort);
 		System.out.println("lookup do cliente");
+		System.out.println("IP dentro do pacote: " + ipSource);
 		
 		clientSocket.close();
 	}

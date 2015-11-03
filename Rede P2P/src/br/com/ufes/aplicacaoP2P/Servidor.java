@@ -279,8 +279,7 @@ public class Servidor implements Runnable{
 		}
 		
 		// No de origem é o maior da rede.
-		else if (idWanted > newNodeServer.getIdAnt() && newNodeServer.getIdAnt() > newNodeServer.getIdSuc() 
-				&& newNodeServer.getIdSuc() > newNodeServer.getId()) {
+		else if (idWanted > newNodeServer.getId() && idWanted > newNodeServer.getIdAnt() && newNodeServer.getIdAnt() > newNodeServer.getId()) {
 			System.out.println("Passou da quinta condicao");
 			// Guarda a informaÃ§Ã£o anterior para ser mandada a funcao de
 			// resposta Join.
@@ -340,7 +339,7 @@ public class Servidor implements Runnable{
 		
 		aux.setIdSuc(bytesToInt(recvDataidSuc));
 		aux.setIpSuc(InetAddress.getByAddress(recvDataipSuc));
-		
+		System.out.println("auxIDsucessor " + aux.getIdSuc()+ "auxIPsucessor " + aux.getIpSuc());
 	}
 	
 	public void updateAnswer(ByteArrayInputStream bin) throws IOException {
